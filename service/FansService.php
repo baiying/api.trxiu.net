@@ -14,5 +14,9 @@ use app\models\Fans;
 
 class FansService extends BaseService
 {
+    public function Test($select = '*',$where = array(),$ext = array()){
+        $fans = new Fans;
+        return $fans->getListAndLimit($select,$where,$ext);
+    }
 
 }

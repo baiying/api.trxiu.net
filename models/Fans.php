@@ -3,6 +3,8 @@
 namespace app\models;
 
 use Yii;
+use yii\db\Query;
+use app\models\BaseModel;
 
 /**
  * This is the model class for table "fans".
@@ -13,7 +15,7 @@ use Yii;
  * @property string $wx_thumb
  * @property integer $create_time
  */
-class Fans extends \yii\db\ActiveRecord
+class Fans extends BaseModel
 {
     /**
      * @inheritdoc
