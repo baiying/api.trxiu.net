@@ -31,7 +31,6 @@ class Fans extends BaseModel
     public function rules()
     {
         return [
-            [['fans_id'], 'required'],
             [['fans_id', 'create_time'], 'integer'],
             [['wx_openid'], 'string', 'max' => 64],
             [['wx_name'], 'string', 'max' => 16],

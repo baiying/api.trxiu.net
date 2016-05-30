@@ -16,6 +16,12 @@ use app\models\Fans;
 class FansService extends BaseService
 {
 
+    /**
+     * @param string $select
+     * @param array $where
+     * @param array $ext
+     * @return 获取列表
+     */
     public function getList($select = '*',$where = array(),$ext = array()){
         $fans = new Fans;
         $result = $fans->getListAndLimit($select,$where,$ext);
@@ -25,6 +31,10 @@ class FansService extends BaseService
         return $this->export(true,'成功',$result);
     }
 
+    /**
+     * @param array $data
+     * @return 添加粉丝
+     */
     public function addFans($data = array()){
 
         $fans = new Fans();
@@ -43,6 +53,10 @@ class FansService extends BaseService
         return $this->export(true,'成功',$result);
     }
 
+    /**
+     * @param array $where
+     * @return 获取粉丝(按条件获取一行)
+     */
     public function getFans($where = array()){
         $fans = new Fans();
         $result = $fans->getRow('*',$where);
@@ -52,8 +66,17 @@ class FansService extends BaseService
         return $this->export(true,'成功',$result);
     }
 
+    /**
+     * @param array $data
+     * @param array $where
+     * @return 更新粉丝信息
+     */
     public function upFans($data = array(),$where = array()){
         $fans = new Fans();
+        $fans->attributes = $data;
+        if(!$fans->validate()) {
+            return $this->export(false,'属性验证失败',$fans->errors);
+        }
         $result = $fans->updateData($data,$where);
         if(!$result){
             return $this->export(false,'更新失败',$result);
@@ -61,6 +84,10 @@ class FansService extends BaseService
         return $this->export(true,'成功',$result);
     }
 
+    /**
+     * @param array $where
+     * @return 删除粉丝
+     */
     public function delFans($where = array()){
         $fans = new Fans();
         $result = $fans->delRow($where);
