@@ -2,20 +2,22 @@
 
 namespace app\models;
 
+use app\components\ApiCode;
 use Yii;
 use yii\db\Query;
 
 class BaseModel extends \yii\db\ActiveRecord
 {
+    private $primaryConnection;
+    private $secondaryConnection;
 
-//    public function getList($select = '*',$where = '',$ext = ''){
-//        $query = new Query();
-//        $query = $query->select($select);
-//        $query = $query->from($this->tableName());
-//        $query = $query->where($where);
-//        $query = $query->all();
-//        return $query;
-//    }
+
+    public function init()
+    {
+
+        $this->primaryConnection = Yii::$app->db;
+        $this->secondaryConnection = Yii::$app->db;
+    }
 
 
     public function getList($select = "*", $where = array(), $ext = array())
@@ -37,6 +39,7 @@ class BaseModel extends \yii\db\ActiveRecord
             if (is_array($ext['limit'])) {
                 $query->limit($ext['limit']['size']);
                 $query->offset($ext['limit']['start']);
+//                echo json_encode($query);exit;
             } else {
                 $query->limit($ext['limit']);
             }
@@ -106,6 +109,7 @@ class BaseModel extends \yii\db\ActiveRecord
     public function insertData($data,$dataValueIsNull = false)
     {
         if (is_array($data)) $data = (object)$data;
+        $data->create_time = time();
         if($dataValueIsNull == false){
             foreach ($data as $k => $v) {
                 if (is_null($v)) {
@@ -114,7 +118,7 @@ class BaseModel extends \yii\db\ActiveRecord
             }
         }
         unset($data->tableObject);  //解决以$this为数据对象时，public属性被添加到数据对象问题
-        return $this->db->insert($this->table_name, $data);
+        return $this->primaryConnection->createCommand()->insert($this->tableName(),$data)->execute();
     }
 
     public function updateData($data, $where = '',$dataValueIsNull = false)
@@ -128,17 +132,19 @@ class BaseModel extends \yii\db\ActiveRecord
             }
         }
         unset($data->tableObject);
-        if ($where) $this->db->where($where);
-        return $this->db->update($this->table_name, $data);
+        return $this->primaryConnection->createCommand()->update($this->tableName(),$data,$where)->execute();
+
     }
 
     public function insertOrUpdate($data, $uKey, $updateIgnore = array(), $isUpdate = true)
     {
+        $query = new Query();
         if (is_array($data)) $data = (object)$data;
 
-        $this->db->where($uKey, $data->$uKey);
-        $count = $this->db->count_all_results($this->table_name);
-        if ($count) {
+        $query = $query->from($this->tableName());
+        $query = $query->where([$uKey => $data->$uKey]);
+        $result = $query->all();
+        if ($result) {
             //update
             $where = array($uKey => $data->$uKey);
             unset($data->$uKey);
@@ -148,11 +154,11 @@ class BaseModel extends \yii\db\ActiveRecord
                 }
             }
             if ($isUpdate) {
-                return $this->update($data, $where);
+                return $this->primaryConnection->createCommand()->update($this->tableName(),$data,$where)->execute();
             }
         } else {
             //insert
-            return $this->insert($data);
+            return $this->primaryConnection->createCommand()->insert($this->tableName(),$data)->execute();
         }
 
         return true;
@@ -161,21 +167,30 @@ class BaseModel extends \yii\db\ActiveRecord
 
     public function getRow($select = "*", $where = "")
     {
-        $this->getWhere($where);
+
+        $query = new Query();
+        $query = $query->from($this->tableName());
+        $this->getWhere($where,$query);
         if (is_array($select)) {
             $select = implode(",", $select);
         }
-        $select && $this->db->select($select);
-        $this->db->limit(1);
-        $query = $this->db->get($this->table_name);
-        return $query->row_array();
+
+        $query = $query->limit(1);
+        $query = $query->select($select);
+        $result = $query->one();
+        return $result;
     }
 
     public function delRow($where)
     {
-        $this->getWhere($where);
-        $del = $this->db->delete($this->table_name);
-        return $del;
+        $query = new Query();
+        $query = $query->from($this->tableName());
+        $query = $query->where($where);
+        $result = $query->one();
+        if (!$result) {
+            return ApiCode::ERROR_API_NOTEXIST;
+        }
+        return $this->primaryConnection->createCommand()->delete($this->tableName(),$where)->execute();
     }
 
 

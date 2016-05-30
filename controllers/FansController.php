@@ -18,11 +18,12 @@ class FansController extends BaseController
 
     private $fansService;
 
+
     public function actionTest(){
         $page = 1;
         $size = 10;
 //        $where['wx_openid'] = 1;
-        $where['wx_name'] = ['saq','sqw'];
+        $where['wx_name'] = [1];
 //        $where['wx_thumb'] = 'dsds';
 //        $ext['orderBy'] = 'fans_id DESC';
 //        $ext['groupBy'] = 'fans_id';
@@ -35,4 +36,152 @@ class FansController extends BaseController
         echo json_encode($a);exit;
     }
 
+    /**
+     * 添加粉丝
+     */
+    public function actionAddfans(){
+        $result = $data = $where = array();
+
+        $this->checkMethod('get');
+        $rule = [
+            'wx_openid' => ['type' => 'string', 'required' => TRUE, 'default' => ''],
+            'wx_name' => ['type' => 'string', 'required' => TRUE, 'default' => ''],
+            'wx_thumb' => ['type' => 'string', 'required' => TRUE, 'default' => ''],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+
+        //构建查询条件
+        $data['wx_openid'] = $args['wx_openid'];
+        $data['wx_name'] = $args['wx_name'];
+        $data['wx_thumb'] = $args['wx_thumb'];
+        $this->fansService = new FansService();
+        $result = $this->fansService->addFans($data);
+        $api = new ApiCode();
+        if($api!=true){
+            $this->renderJson($api,'添加失败',[]);
+        }
+        $this->renderJson(ApiCode::SUCCESS,'添加成功',$result);
+
+    }
+
+    /**
+     * 获取粉丝列表
+     */
+    public function actionGetfanslist(){
+        $result = $data = $where = $ext = array();
+
+        $this->checkMethod('get');
+        $rule = [
+            'wx_openid' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
+            'wx_name' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
+            'wx_thumb' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
+            'page' => ['type' => 'int', 'required' => FALSE, 'default' => ''],
+            'size' => ['type' => 'int', 'required' => FALSE, 'default' => ''],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+
+        isset($args['wx_openid']) && $where['wx_openid'] = $args['wx_openid'];
+        isset($args['wx_name']) && $where['wx_name'] = $args['wx_name'];
+        isset($args['wx_thumb']) && $where['wx_thumb'] = $args['wx_thumb'];
+        $ext['limit']['page'] = isset($args['page']) ? $args['page'] : 1;
+        $ext['limit']['size'] = isset($args['size']) ? $args['size'] : 10;
+        //计算limit数据
+        $ext['limit']['start'] = ($ext['limit']['page'] - 1) * $ext['limit']['size'];
+        $ext['orderBy'] = ['create_time'=>'desc'];
+
+        $this->fansService = new FansService();
+        $result = $this->fansService->getList('*',$where,$ext);
+        if(!$result){
+            $this->renderJson($result,'获取失败',[]);
+        }
+        $this->renderJson(ApiCode::SUCCESS,'成功',$result);
+
+    }
+
+    /**
+     * 根据ID获取粉丝
+     */
+    public function actionGetfansbyid(){
+        $result = $data = $where = $ext = array();
+
+        $this->checkMethod('get');
+        $rule = [
+            'fans_id' => ['type' => 'string', 'required' => TRUE, 'default' => ''],
+            'wx_openid' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
+            'wx_name' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
+            'wx_thumb' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+
+        //构建查询条件
+        $where['fans_id'] = $args['fans_id'];
+        isset($args['wx_openid']) && $where['wx_openid'] = $args['wx_openid'];
+        isset($args['wx_name']) && $where['wx_name'] = $args['wx_name'];
+        isset($args['wx_thumb']) && $where['wx_thumb'] = $args['wx_thumb'];
+
+        $this->fansService = new FansService();
+        $result = $this->fansService->getFans($where);
+        if(!$result){
+            $this->renderJson($result,'获取失败',[]);
+        }
+        $this->renderJson(ApiCode::SUCCESS,'成功',$result);
+
+    }
+
+    /**
+     * 更新粉丝信息
+     */
+    public function actionUpfansbyid(){
+        $result = $data = $where = $ext = array();
+
+        $this->checkMethod('get');
+        $rule = [
+            'fans_id' => ['type' => 'string', 'required' => TRUE, 'default' => ''],
+            'wx_openid' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
+            'wx_name' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
+            'wx_thumb' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+
+        //构建查询条件
+        $where['fans_id'] = $args['fans_id'];
+        isset($args['wx_openid']) && $data['wx_openid'] = $args['wx_openid'];
+        isset($args['wx_name']) && $data['wx_name'] = $args['wx_name'];
+        isset($args['wx_thumb']) && $data['wx_thumb'] = $args['wx_thumb'];
+
+        $this->fansService = new FansService();
+        $result = $this->fansService->upFans($data,$where);
+        if(!$result){
+            $this->renderJson($result,'数据无变化',[]);
+        }
+        $this->renderJson(ApiCode::SUCCESS,'成功',$result);
+    }
+
+    /**
+     * 删除粉丝
+     */
+    public function actionDelfansbyid(){
+        $result = $data = $where = $ext = array();
+
+        $this->checkMethod('get');
+        $rule = [
+            'fans_id' => ['type' => 'string', 'required' => TRUE, 'default' => ''],
+            'wx_openid' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
+            'wx_name' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+
+        //构建查询条件
+        $where['fans_id'] = $args['fans_id'];
+        $where['wx_openid'] = $args['wx_openid'];
+        $where['wx_name'] = $args['wx_name'];
+
+        $this->fansService = new FansService();
+        $result = $this->fansService->delFans($where);
+        if($result == 404){
+            $this->renderJson($result,'找不到数据',[]);
+        }
+        $this->renderJson(ApiCode::SUCCESS,'成功',$result);
+
+    }
 }
