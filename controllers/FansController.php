@@ -56,11 +56,10 @@ class FansController extends BaseController
         $data['wx_thumb'] = $args['wx_thumb'];
         $this->fansService = new FansService();
         $result = $this->fansService->addFans($data);
-        $api = new ApiCode();
-        if($api!=true){
-            $this->renderJson($api,'添加失败',[]);
+        if($result['status']==false){
+            $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
         }
-        $this->renderJson(ApiCode::SUCCESS,'添加成功',$result);
+        $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
 
     }
 
@@ -91,10 +90,10 @@ class FansController extends BaseController
 
         $this->fansService = new FansService();
         $result = $this->fansService->getList('*',$where,$ext);
-        if(!$result){
-            $this->renderJson($result,'获取失败',[]);
+        if($result['status']==false){
+            $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
         }
-        $this->renderJson(ApiCode::SUCCESS,'成功',$result);
+        $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
 
     }
 
@@ -121,10 +120,10 @@ class FansController extends BaseController
 
         $this->fansService = new FansService();
         $result = $this->fansService->getFans($where);
-        if(!$result){
-            $this->renderJson($result,'获取失败',[]);
+        if($result['status']==false){
+            $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
         }
-        $this->renderJson(ApiCode::SUCCESS,'成功',$result);
+        $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
 
     }
 
@@ -151,10 +150,10 @@ class FansController extends BaseController
 
         $this->fansService = new FansService();
         $result = $this->fansService->upFans($data,$where);
-        if(!$result){
-            $this->renderJson($result,'数据无变化',[]);
+        if($result['status']==false){
+            $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
         }
-        $this->renderJson(ApiCode::SUCCESS,'成功',$result);
+        $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
     }
 
     /**
@@ -178,10 +177,10 @@ class FansController extends BaseController
 
         $this->fansService = new FansService();
         $result = $this->fansService->delFans($where);
-        if($result == 404){
-            $this->renderJson($result,'找不到数据',[]);
+        if($result['status']==false){
+            $this->renderJson(ApiCode::ERROR_API_NOTEXIST,$result['message'],$result['data']);
         }
-        $this->renderJson(ApiCode::SUCCESS,'成功',$result);
+        $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
 
     }
 }
