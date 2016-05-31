@@ -17,7 +17,7 @@ use Yii;
  * @property integer $end_time
  * @property integer $status
  */
-class Ballot extends \yii\db\ActiveRecord
+class Ballot extends BaseModel
 {
     /**
      * @inheritdoc
