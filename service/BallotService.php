@@ -164,11 +164,37 @@ class BallotService extends BaseService
      */
     public function addVotes($where,$votes){
         $this->ballotEAnchor = new BallotEAnchor();
+        $this->ballot = new Ballot();
+        $ballotWhere['ballot_id'] = $where['ballot_id'];
+        $result = $this->ballot->getRow('*',$ballotWhere);
+        if(!$result){
+            return $this->export(false,'活动不存在',$result);
+        }
         $result = $this->ballotEAnchor->getRow('*',$where);
-        if(!$result) return $this->export(false,'主播不存在不能投票',$result);
-        $ballotEAnchor = BallotEAnchor::findOne($where);
-        $ballotEAnchor->votes += $votes;
-        $result = $ballotEAnchor->save();
+        if(!$result){
+            return $this->export(false,'该主播没有参加活动',$result);
+        }
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        try {
+            $ballotEAnchor = BallotEAnchor::findOne($where);
+            $ballotEAnchor->votes += $votes;
+            $result = $ballotEAnchor->save();
+            if(!$result){
+                return $this->export(false,'操作失败',$result);
+            }
+            $ballotEAnchor = Ballot::findOne($ballotWhere);
+            $ballotEAnchor->votes += $votes;
+            $result = $ballotEAnchor->save();
+            if(!$result){
+                return $this->export(false,'操作失败',$result);
+            }
+            // ... 执行其他 SQL 语句 ...
+            $transaction->commit();
+        } catch(Exception $e) {
+            $transaction->rollBack();
+            $result = false;
+        }
         if(!$result){
             return $this->export(false,'操作失败',$result);
         }
