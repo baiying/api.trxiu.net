@@ -12,7 +12,7 @@ use Yii;
  * @property integer $anchor_id
  * @property integer $votes
  */
-class BallotEAnchor extends \yii\db\ActiveRecord
+class BallotEAnchor extends BaseModel
 {
     /**
      * @inheritdoc

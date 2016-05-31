@@ -19,7 +19,7 @@ use Yii;
  * @property integer $modify_time
  * @property integer $last_time
  */
-class Anchor extends \yii\db\ActiveRecord
+class Anchor extends BaseModel
 {
     /**
      * @inheritdoc

@@ -9,6 +9,7 @@
 namespace app\service;
 
 use app\components\ApiCode;
+use app\models\Anchor;
 use Yii;
 use app\service\BaseService;
 use app\models\BallotEAnchor;
@@ -18,12 +19,14 @@ class BallotService extends BaseService
 {
     private $ballot;
     private $ballotEAnchor;
+    private $anchor;
 
     /**
      * 初始化活动
      */
     public function initBallot($data){
         $this->ballot = new Ballot();
+        $this->ballot->attributes = $data;
         if(!$this->ballot->validate()) {
             return $this->export(false,'属性验证失败',$this->ballot->errors);
         }
@@ -48,6 +51,7 @@ class BallotService extends BaseService
      */
     public function upBallot($data,$where){
         $this->ballot = new Ballot();
+        $this->ballot->attributes = $data;
         if(!$this->ballot->validate()) {
             return $this->export(false,'属性验证失败',$this->ballot->errors);
         }
@@ -63,5 +67,113 @@ class BallotService extends BaseService
 
     }
 
+    /**
+     * 获取活动列表
+     */
+    public function getBallotList($where,$ext){
+
+        $result = $selectWhere = array();
+
+        isset($where['current_time']) && $selectWhere[] = "begin_time <= ".$where['current_time']." and end_time >=  ".$where['current_time'];
+        isset($where['begin_time']) && $selectWhere[] = "begin_time <= ".$where['begin_time'];
+        isset($where['end_time']) && $selectWhere[] = "end_time >= ".$where['end_time'];
+        isset($where['status']) && $selectWhere[] = "status = ".$where['status'];
+        $this->ballot = new Ballot();
+        $result = $this->ballot->getListAndLimit('*',$selectWhere,$ext);
+        if(!$result){
+            return $this->export(false,'数据获取失败',$result);
+        }
+        return $this->export(true,'成功',$result);
+    }
+
+    /**
+     * 获取详细活动信息
+     */
+    public function getBallotDetail($where){
+
+        $this->ballot = new Ballot();
+        $this->ballotEAnchor = new BallotEAnchor();
+        $this->anchor = new Anchor();
+
+        // 所有的查询都在主服务器上执行
+        $result = $this->ballot->getRow('*',$where);
+        $result['anchorList'] = $this->ballotEAnchor->getList('*',$where);
+
+        foreach ($result['anchorList'] as $item){
+            $anchorIdList[] = $item['anchor_id'];
+        }
+        if(isset($anchorIdList)){
+            $anchorInformationList = $this->anchor->getList();
+        }
+        if(isset($anchorIdList) && isset($anchorInformationList)){
+            foreach ($result['anchorList'] as $key => $value){
+                foreach ($anchorInformationList as $item){
+                    if ($item['anchor_id'] == $value['anchor_id']){
+                        $result['anchorList'][$key]['Information'] = $item;
+                    }
+                }
+
+            }
+        }
+        if(!$result){
+            return $this->export(false,'获取失败',$result);
+        }
+        return $this->export(true,'成功',$result);
+
+    }
+
+    /**
+     * 主播参选
+     */
+    public function ballotAddAnchor($data){
+        $this->ballotEAnchor = new BallotEAnchor();
+        $this->ballotEAnchor->attributes = $data;
+        if(!$this->ballotEAnchor->validate()) {
+            return $this->export(false,'属性验证失败',$this->ballotEAnchor->errors);
+        }
+        $data = (object)$data;
+        $where['ballot_id'] = $data->ballot_id;
+        $where['anchor_id'] = $data->anchor_id;
+        $result = $this->ballotEAnchor->getRow('*',$where);
+        if($result) return $this->export(false,'请勿重复添加',$result);
+        $result = $this->ballotEAnchor->insertData($data);
+        if(!$result){
+            return $this->export(false,'插入失败',$result);
+        }
+        return $this->export(true,'成功',$result);
+
+    }
+
+    /**
+     * 主播退赛
+     */
+    public function ballotDelAnchor($where){
+        $this->ballotEAnchor = new BallotEAnchor();
+        $result = $this->ballotEAnchor->getRow('*',$where);
+        if(!$result) return $this->export(false,'数据不存在',$result);
+        $result = $this->ballotEAnchor->delRow($where);
+        if(!$result){
+            return $this->export(false,'操作失败',$result);
+        }
+        return $this->export(true,'成功',$result);
+
+    }
+
+    /**
+     * 投票
+     */
+    public function addVotes($where,$votes){
+        $this->ballotEAnchor = new BallotEAnchor();
+        $result = $this->ballotEAnchor->getRow('*',$where);
+        if(!$result) return $this->export(false,'主播不存在不能投票',$result);
+        $ballotEAnchor = BallotEAnchor::findOne($where);
+        $ballotEAnchor->votes += $votes;
+        $result = $ballotEAnchor->save();
+        if(!$result){
+            return $this->export(false,'操作失败',$result);
+        }
+        return $this->export(true,'成功',$result);
+
+    }
 
 }
