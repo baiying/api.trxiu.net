@@ -19,7 +19,7 @@ use Yii;
  * @property integer $end_time
  * @property string $refund
  */
-class Canvass extends \yii\db\ActiveRecord
+class Canvass extends BaseModel
 {
     /**
      * @inheritdoc

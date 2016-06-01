@@ -16,7 +16,7 @@ use Yii;
  * @property string $earn
  * @property integer $new_fans
  */
-class VoteLog extends \yii\db\ActiveRecord
+class VoteLog extends BaseModel
 {
     /**
      * @inheritdoc
