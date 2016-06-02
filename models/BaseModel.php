@@ -52,6 +52,8 @@ class BaseModel extends \yii\db\ActiveRecord
 
     public function getListAndLimit($select = "*", $where = "", $ext = array())
     {
+        $ext['limit']['size'] = isset($ext['limit']['size']) ? $ext['limit']['size'] : 1;
+        $ext['limit']['start'] = isset($ext['limit']['start']) ? $ext['limit']['start'] : 0;
         $result['list'] = $this->getList($select,$where,$ext);
         $query = new Query();
         $query = $query->from($this->tableName());
