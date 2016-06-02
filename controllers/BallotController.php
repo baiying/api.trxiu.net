@@ -218,17 +218,71 @@ class BallotController extends BaseController
 
         $this->checkMethod('get');
         $rule = [
-            'ballot_id' => ['type' => 'int', 'required' => TRUE],
-            'anchor_id' => ['type' => 'int', 'required' => TRUE],
-            'votes' => ['type' => 'int', 'required' => FALSE],
+            'ballot_id' => ['type' => 'int', 'required' => TRUE],//活动ID
+            'anchor_id' => ['type' => 'int', 'required' => TRUE],//主播ID
+            'fans_id' => ['type' => 'int', 'required' => TRUE],//粉丝ID
+            'votes' => ['type' => 'int', 'required' => FALSE],//投票票数
+            'is_canvass' => ['type' => 'int', 'required' => TRUE],//是否被拉票
+            'canvass_id' => ['type' => 'int', 'required' => FALSE],//拉票ID
+            'amount' => ['type' => 'int', 'required' => FALSE],//拉票金额
+            'url' => ['type' => 'int', 'required' => FALSE],//拉票分享地址
+            'status' => ['type' => 'int', 'required' => TRUE],//状态，1 有效，2 待支付，3 无效
+            'create_time' => ['type' => 'int', 'required' => FALSE],//拉票申请提交时间
+            'active_time' => ['type' => 'int', 'required' => FALSE],//拉票生效时间
+            'end_time' => ['type' => 'int', 'required' => FALSE],//拉票结束时间
+            'refund' => ['type' => 'int', 'required' => FALSE],//退款金额
+            'earn' => ['type' => 'int', 'required' => FALSE],//通过拉票活动赚取金额
+            'new_fans' => ['type' => 'int', 'required' => FALSE],
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->get());
 
-        $where['ballot_id'] = $args['ballot_id'];
-        $where['anchor_id'] = $args['anchor_id'];
-        $votes = isset($args['votes']) ? $args['votes'] : 1;
+        $data['ballot_id'] = $args['ballot_id'];
+        $data['anchor_id'] = $args['anchor_id'];
+        $data['fans_id'] = $args['fans_id'];
+        $data['votes'] =  isset($args['votes']) ? $args['votes'] : 1;
+        isset($args['is_canvass']) && $data['is_canvass'] = $args['is_canvass'];
+        isset($args['amount']) && $data['amount'] = $args['amount'];
+        isset($args['url']) && $data['url'] = $args['url'];
+        isset($args['status']) && $data['status'] = $args['status'];
+        isset($args['create_time']) && $data['create_time'] = $args['create_time'];
+        isset($args['active_time']) && $data['active_time'] = $args['active_time'];
+        isset($args['end_time']) && $data['end_time'] = $args['end_time'];
+        isset($args['refund']) && $data['refund'] = $args['refund'];
+        isset($args['earn']) && $data['earn'] = $args['earn'];
+        isset($args['new_fans']) && $data['new_fans'] = $args['new_fans'];
+
         $this->ballotService = new BallotService();
-        $result = $this->ballotService->addVotes($where,$votes);
+        $result = $this->ballotService->addVotes($data);
+        if($result['status']==false){
+            $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
+        }
+        $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
+    }
+
+    /**
+     * 领取红包
+     */
+    public function actionGetredpacket(){
+
+        $result = $data = $where = array();
+
+        $this->checkMethod('get');
+        $rule = [
+            'ballot_id' => ['type' => 'int', 'required' => TRUE],//活动ID
+            'anchor_id' => ['type' => 'int', 'required' => TRUE],//主播ID
+            'fans_id' => ['type' => 'int', 'required' => TRUE],//粉丝ID
+            'canvass_id' => ['type' => 'string', 'required' => TRUE],//拉票ID
+            'new_fans' => ['type' => 'int', 'required' => FALSE],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+
+        $data['ballot_id'] = $args['ballot_id'];
+        $data['anchor_id'] = $args['anchor_id'];
+        $data['fans_id'] = $args['fans_id'];
+        $data['canvass_id'] = $args['canvass_id'];
+        $this->ballotService = new BallotService();
+
+        $result = $this->ballotService->getRedPacket($data);
         if($result['status']==false){
             $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
         }

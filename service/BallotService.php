@@ -10,6 +10,9 @@ namespace app\service;
 
 use app\components\ApiCode;
 use app\models\Anchor;
+use app\models\Canvass;
+use app\models\Fans;
+use app\models\VoteLog;
 use Yii;
 use app\service\BaseService;
 use app\models\BallotEAnchor;
@@ -20,6 +23,9 @@ class BallotService extends BaseService
     private $ballot;
     private $ballotEAnchor;
     private $anchor;
+    private $canvass;
+    private $vote_log;
+    private $fans;
 
     /**
      * 初始化活动
@@ -162,32 +168,103 @@ class BallotService extends BaseService
     /**
      * 投票
      */
-    public function addVotes($where,$votes){
+    public function addVotes($data){
+        //验证必填参数
+        if(!isset($data['ballot_id']) || !isset($data['anchor_id']) || !isset($data['fans_id']) || !isset($data['votes'])){
+            return $this->export(false,'缺失参数','ballot_id,anchor_id,fans_id,votes');
+        }
+        //拼装条件
+        $serverNum =  Yii::$app->id;
+        list($t1, $t2) = explode(' ', microtime());
+        $time = $t2 .ceil( ($t1 * 1000) );
+        $rand = rand(1000,9999);
+        $canvass_id = $serverNum.$time.$rand;
+        $canvassData['canvass_id'] = $canvass_id;
+        $ballotWhere['ballot_id'] = $data['ballot_id'];
+        $ballotEAnchorWhere['ballot_id'] = $data['ballot_id'];
+        $ballotEAnchorWhere['anchor_id'] = $data['anchor_id'];
+
+
+        $serverNum =  Yii::$app->id;
+        list($t1, $t2) = explode(' ', microtime());
+        $time = $t2 .ceil( ($t1 * 1000) );
+        $rand = rand(1000,9999);
+        $canvass_id = $serverNum.$time.$rand;
+        $canvassData['canvass_id'] = $canvass_id;
+        $canvassData['ballot_id'] = $data['ballot_id'];
+        $canvassData['anchor_id'] = $data['anchor_id'];
+        $canvassData['fans_id'] = $data['fans_id'];
+
+
+        $serverNum =  Yii::$app->id;
+        list($t1, $t2) = explode(' ', microtime());
+        $time = $t2 .ceil( ($t1 * 1000) );
+        $rand = rand(1000,9999);
+        $vote_id = $serverNum.$time.$rand;
+        $votes = isset($data['votes']) ? $data['votes'] : 1;
+        $vote_logData['vote_id'] = $vote_id;
+        $vote_logData['ballot_id'] = $data['ballot_id'];
+        $vote_logData['anchor_id'] = $data['anchor_id'];
+        $vote_logData['fans_id'] = $data['fans_id'];
+        isset($data['amount']) && $canvassData['amount'] = $data['amount'];
+        isset($data['url']) && $canvassData['url'] = $data['url'];
+        isset($data['status']) && $canvassData['status'] = $data['status'];
+        isset($data['create_time']) && $canvassData['create_time'] = $data['create_time'];
+        isset($data['active_time']) && $canvassData['active_time'] = $data['active_time'];
+        isset($data['end_time']) && $canvassData['end_time'] = $data['end_time'];
+        isset($data['refund']) && $canvassData['refund'] = $data['refund'];
+        isset($data['create_time']) && $vote_logData['create_time'] = $data['create_time'];
+        isset($data['new_fans']) && $vote_logData['new_fans'] = $data['new_fans'];
+
         $this->ballotEAnchor = new BallotEAnchor();
         $this->ballot = new Ballot();
-        $ballotWhere['ballot_id'] = $where['ballot_id'];
+        $this->canvass = new Canvass();
+        $this->vote_log = new VoteLog();
+        $this->fans = new Fans();
+        //验证
         $result = $this->ballot->getRow('*',$ballotWhere);
         if(!$result){
             return $this->export(false,'活动不存在',$result);
         }
-        $result = $this->ballotEAnchor->getRow('*',$where);
+        $result = $this->ballotEAnchor->getRow('*',$ballotEAnchorWhere);
         if(!$result){
             return $this->export(false,'该主播没有参加活动',$result);
+        }
+        $fansWhere['fans_id'] = $data['fans_id'];
+        $result = $this->fans->getRow('*',$fansWhere);
+        if(!$result){
+            return $this->export(false,'您还没有注册过，请授权登录后投票',$result);
         }
         $connection = Yii::$app->db;
         $transaction = $connection->beginTransaction();
         try {
-            $ballotEAnchor = BallotEAnchor::findOne($where);
+            $ballotEAnchor = BallotEAnchor::findOne($ballotEAnchorWhere);
             $ballotEAnchor->votes += $votes;
             $result = $ballotEAnchor->save();
             if(!$result){
-                return $this->export(false,'操作失败',$result);
+                return $this->export(false,'投票操作失败',$result);
             }
             $ballotEAnchor = Ballot::findOne($ballotWhere);
             $ballotEAnchor->votes += $votes;
             $result = $ballotEAnchor->save();
             if(!$result){
-                return $this->export(false,'操作失败',$result);
+                return $this->export(false,'投票操作失败',$result);
+            }
+            $this->canvass->attributes = $canvassData;
+            if(!$this->canvass->validate()) {
+                return $this->export(false,'属性验证失败',$this->canvass->errors);
+            }
+            $result = $this->canvass->insertData($canvassData);
+            if(!$result){
+                return $this->export(false,'拉票信息插入失败',$result);
+            }
+            $this->vote_log->attributes = $vote_logData;
+            if(!$this->vote_log->validate()) {
+                return $this->export(false,'属性验证失败',$this->vote_log->errors);
+            }
+            $result = $this->vote_log->insertData($vote_logData);
+            if(!$result){
+                return $this->export(false,'投票记录插入失败',$result);
             }
             // ... 执行其他 SQL 语句 ...
             $transaction->commit();
@@ -200,6 +277,185 @@ class BallotService extends BaseService
         }
         return $this->export(true,'成功',$result);
 
+    }
+
+    /**
+     * 领取红包
+     * @param $data
+     * @return array|mixed
+     */
+    public function getRedPacket($data){
+        //验证必填参数
+        if(!isset($data['ballot_id']) || !isset($data['anchor_id']) || !isset($data['fans_id']) || !isset($data['canvass_id'])){
+            return $this->export(false,'缺失参数','ballot_id,anchor_id,fans_id,votes');
+        }
+        $this->ballotEAnchor = new BallotEAnchor();
+        $this->ballot = new Ballot();
+        $this->canvass = new Canvass();
+        $this->vote_log = new VoteLog();
+        $this->fans = new Fans();
+        $fansWhere['fans_id'] = $data['fans_id'];
+        $result = $this->fans->getRow('*',$fansWhere);
+        if(!$result){
+            return $this->export(false,'您还没有注册过，请授权登录后投票',$result);
+        }
+        $where['ballot_id'] = $data['ballot_id'];
+        $where['anchor_id'] = $data['anchor_id'];
+        $where['canvass_id'] = $data['canvass_id'];
+        $result = $this->canvass->getRow('*',$where);
+        if(!$result||$result['amount']==0){
+            return $this->export(false,'您领取的红包不存在，或已经过期',$result);
+        }
+        $amount = $result['amount'];
+        $vote_logRowWhere['ballot_id'] = $data['ballot_id'];
+        $vote_logRowWhere['anchor_id'] = $data['anchor_id'];
+        $vote_logRowWhere['fans_id'] = $data['fans_id'];
+        $vote_logRowWhere['canvass_id'] = $data['canvass_id'];
+        $result = $this->vote_log->getRow('*',$vote_logRowWhere);//验证是否领取过
+        if($result){
+            return $this->export(false,'您已经领取过红包了哦！请勿重复领取',$result);
+        }
+        $vote_logWhere['ballot_id'] = $data['ballot_id'];
+        $vote_logWhere['anchor_id'] = $data['anchor_id'];
+        $vote_logWhere['canvass_id'] = $data['canvass_id'];
+        $result = $this->vote_log->getList('*',$vote_logWhere);
+        $countNum = count($result);
+        $lost = 0;
+        foreach ($result as $item){
+            $lost += $item['earn'];
+        }
+        $total = $num = $this->computeNum($amount);
+        $ranking = $countNum+1;
+        $total = $total-$lost;
+        if($ranking>$num){
+            return $this->export(false,'红包已经被领完了哦',$result);
+        }
+        $result = $this->computeRedPacket($total,$num,$ranking);
+        if(!$result['status']||!$result['data']){
+            return $this->export(false,'红包计算失败',$result['message']);
+        }
+        $remaining = $result['data']['total'];//余额
+        $money = $result['data']['money'];//领取到
+        $ranking = $result['data']['ranking'];//领取排序
+
+        $serverNum =  Yii::$app->id;
+        list($t1, $t2) = explode(' ', microtime());
+        $time = $t2 .ceil( ($t1 * 1000) );
+        $rand = rand(1000,9999);
+        $vote_id = $serverNum.$time.$rand;
+        $vote_logData['ballot_id'] = $data['ballot_id'];
+        $vote_logData['anchor_id'] = $data['anchor_id'];
+        $vote_logData['fans_id'] = $data['fans_id'];
+        $vote_logData['canvass_id'] = $data['canvass_id'];
+        $vote_logData['vote_id'] = $vote_id;
+        $vote_logData['create_time'] = time();
+        $vote_logData['earn'] = $money;
+        isset($data['new_fans']) && $vote_logData['new_fans'] = $data['new_fans'];
+
+        $this->vote_log->attributes = $vote_logData;
+        if(!$this->vote_log->validate()) {
+            return $this->export(false,'属性验证失败',$this->vote_log->errors);
+        }
+        $result = $this->vote_log->insertData($vote_logData);
+        if(!$result){
+            return $this->export(false,'操作失败',$result);
+        }
+        return $this->export(true,'成功','操作成功,您是第'.$ranking.'位领取的朋友，您领取到了'.$money.'元。'.'还剩'.$remaining.'元待领取。');
+
+    }
+
+    /**
+     * 计算红包个数
+     */
+    public function computeNum($total){
+        if($total%2!=0){
+            $total = floor($total)+1;//舍去取整加一
+        }
+        $num = round($total/2);
+        return $num;
+    }
+
+
+    /**
+     * 计算红包
+     * @红包总金额 $total
+     * @拆分个数 $num
+     * @当前排位 $ranking
+     */
+    public function computeRedPacket($total,$num,$ranking){
+        if($ranking < $num){
+            $restrictArr = [
+                'default'=>[
+                    'min'=>0.01,'max'=>2.50,
+                ],'max'=>[
+                    'min'=>2.00,'max'=>2.50,
+                ],'min'=>[
+                    'min'=>0.01,'max'=>0.50,
+                ],[
+                    'min'=>1.20,'max'=>1.30,
+                ],[
+                    'min'=>1.10,'max'=>1.40,
+                ],[
+                    'min'=>1.00,'max'=>1.50,
+                ],[
+                    'min'=>0.90,'max'=>1.60,
+                ],[
+                    'min'=>0.80,'max'=>1.70,
+                ],[
+                    'min'=>0.70,'max'=>1.80,
+                ],[
+                    'min'=>0.60,'max'=>1.90,
+                ],[
+                    'min'=>0.50,'max'=>2.00,
+                ],[
+                    'min'=>0.40,'max'=>2.10,
+                ],[
+                    'min'=>0.30,'max'=>2.20,
+                ],[
+                    'min'=>0.20,'max'=>2.30,
+                ],[
+                    'min'=>1.10,'max'=>1.40,
+                ],
+            ];
+            $restrict = $restrictArr[array_rand($restrictArr,1)];
+            $this->randRedPacket($money,$restrict,$total,$ranking,$restrictArr,$num,$restrictArr['max']['min']);
+        }else{
+            $money = round($total,2);
+        }
+
+        $total=round($total-$money,2);
+//        $result =  '你是第'.$ranking.'个领取红包的人领取金额：'.$money.' 元，余额：'.$total.' 元 <br>';
+        $result = [
+            'ranking' => $ranking,
+            'money' => $money,
+            'total' => $total,
+        ];
+        return $this->export(true,'成功',$result);
+
+    }
+
+    /**
+     * @最小值 $min
+     * @安全上限 $safe_total
+     * @取值区间 $restrict
+     * @总金额 $total
+     * @return float
+     */
+    private function randRedPacket(&$money,$restrict,$total,$ranking,$restrictArr,$num,$min=0.01){
+//        $min=0.01;//每个人最少能收到0.01元
+        $safe_total=($total-($num-$ranking)*$min)/($num-$ranking);//随机安全上限
+        if($safe_total>$restrict['max']||$safe_total<$restrict['min']){
+            $safe_total = $restrict['max'];
+        }
+        $money = round(mt_rand($restrict['min'],$safe_total*100)/100,2);
+        if(($total-$money)/($num-$ranking) > $restrictArr['max']['min']){
+            $restrict = $restrictArr['max'];
+            $this->randRedPacket($money,$restrict,$total,$ranking,$restrictArr,$num,$restrictArr['max']['min']);
+        }
+        if(($total-$money)/($num-$ranking) < $restrictArr['min']['min']){
+            $restrict = $restrictArr['min'];
+            $this->randRedPacket($money,$restrict,$total,$ranking,$restrictArr,$num,$restrictArr['max']['min']);
+        }
     }
 
 }
