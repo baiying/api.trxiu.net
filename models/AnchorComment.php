@@ -15,7 +15,7 @@ use Yii;
  * @property integer $create_time
  * @property integer $status
  */
-class AnchorComment extends \yii\db\ActiveRecord
+class AnchorComment extends BaseModel
 {
     /**
      * @inheritdoc

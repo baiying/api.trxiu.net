@@ -16,7 +16,7 @@ use Yii;
  * @property integer $unreadcoments
  * @property integer $status
  */
-class AnchorNews extends \yii\db\ActiveRecord
+class AnchorNews extends BaseModel
 {
     /**
      * @inheritdoc
