@@ -7,6 +7,28 @@ use app\components\ApiCode;
 
 class WeixinController extends NoAuthBaseController {
     /**
+     * 验证token
+     */
+    public function actionCheckToken() {
+        $signature = Yii::$app->request->get('signature');
+        $timestamp = Yii::$app->request->get('timestamp');
+        $nonce = Yii::$app->request->get('nonce');
+        $echostr = Yii::$app->request->get('echostr');
+        
+        $token = Yii::$app->weixin->getToken();
+        $tmpArr = array($token, $timestamp, $nonce);
+        // use SORT_STRING rule
+        sort($tmpArr, SORT_STRING);
+        $tmpStr = implode( $tmpArr );
+        $tmpStr = sha1( $tmpStr );
+        
+        if( $tmpStr == $signature ){
+            echo $echostr;
+        }else{
+            echo "";
+        }
+    }
+    /**
      * get-oauth-redirect
      * oauth 授权跳转接口
      * @param string $redirect_url  授权后重定向的回调链接地址
@@ -14,8 +36,13 @@ class WeixinController extends NoAuthBaseController {
      * @return array
      */
     public function actionGetOauthRedirect() {
-        $authUrl = Yii::$app->weixin->getOauthRedirect('http://e.cheweixiu.com/wx/notify/hub/', 'callbackstate');
+        $authUrl = Yii::$app->weixin->getOauthRedirect('http://api.e2047.com/weixin/get-code/', 'callbackstate');
         $this->renderJson(ApiCode::SUCCESS, '授权跳转地址获取成功', ['authUrl'=>$authUrl]);
+    }
+    
+    public function actionGetCode() {
+        var_dump(Yii::$app->request->get());
+        exit;
     }
     /**
      * oauth-access-token
