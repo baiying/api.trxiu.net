@@ -27,19 +27,19 @@ class BallotController extends BaseController
 
         $this->checkMethod('get');
         $rule = [
-            'ballot_name' => ['type' => 'string', 'required' => TRUE, 'default' => ''],
-            'description' => ['type' => 'string', 'required' => TRUE, 'default' => ''],
-            'begin_time' => ['type' => 'int', 'required' => TRUE, 'default' => ''],
-            'end_time' => ['type' => 'int', 'required' => TRUE, 'default' => ''],
-            'status' => ['type' => 'string', 'required' => TRUE, 'default' => ''],
+            'ballot_name' => ['type' => 'string', 'required' => TRUE],
+            'description' => ['type' => 'string', 'required' => TRUE],
+            'begin_time' => ['type' => 'int', 'required' => FALSE, 'default' => time()],
+            'end_time' => ['type' => 'int', 'required' => TRUE],
+            'status' => ['type' => 'string', 'required' => TRUE],
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->get());
 
         //构建查询条件
         $data['ballot_name'] = $args['ballot_name'];
         $data['description'] = $args['description'];
-        $data['begin_time'] = date('Y-m-d H:i:s',$args['begin_time']);
-        $data['end_time'] = date('Y-m-d H:i:s',$args['end_time']);
+        $data['begin_time'] = $args['begin_time'];
+        $data['end_time'] = $args['end_time'];
 
         $data['status'] = $args['status'];
         $this->ballotService = new BallotService();
