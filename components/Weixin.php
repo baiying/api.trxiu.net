@@ -93,6 +93,13 @@ class Weixin extends Component {
         }
     }
     /**
+     * 获取自定义token
+     * @return array
+     */
+    public function getToken() {
+        return $this->token;
+    }
+    /**
      * oauth 授权跳转接口
      * @param string $callback 回调URI
      * @return string
