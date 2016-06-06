@@ -18,24 +18,6 @@ class FansController extends BaseController
 
     private $fansService;
 
-
-    public function actionTest(){
-        $page = 1;
-        $size = 10;
-//        $where['wx_openid'] = 1;
-        $where['wx_name'] = [1];
-//        $where['wx_thumb'] = 'dsds';
-//        $ext['orderBy'] = 'fans_id DESC';
-//        $ext['groupBy'] = 'fans_id';
-//        $ext['limit']['page'] = $page!='' ?$page :1;
-//        $ext['limit']['size'] = $size!='' ?$size :10;
-        //计算limit数据
-//        $ext['limit']['start'] = ($ext['limit']['page'] - 1) * $ext['limit']['size'];
-        $this->fansService = new FansService();
-        $a = $this->fansService->Test('*',$where);
-        echo json_encode($a);exit;
-    }
-
     /**
      * 添加粉丝
      */
@@ -44,9 +26,9 @@ class FansController extends BaseController
 
         $this->checkMethod('get');
         $rule = [
-            'wx_openid' => ['type' => 'string', 'required' => TRUE, 'default' => ''],
-            'wx_name' => ['type' => 'string', 'required' => TRUE, 'default' => ''],
-            'wx_thumb' => ['type' => 'string', 'required' => TRUE, 'default' => ''],
+            'wx_openid' => ['type' => 'string', 'required' => TRUE],
+            'wx_name' => ['type' => 'string', 'required' => TRUE],
+            'wx_thumb' => ['type' => 'string', 'required' => TRUE],
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->get());
 
@@ -74,8 +56,8 @@ class FansController extends BaseController
             'wx_openid' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
             'wx_name' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
             'wx_thumb' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
-            'page' => ['type' => 'int', 'required' => FALSE, 'default' => ''],
-            'size' => ['type' => 'int', 'required' => FALSE, 'default' => ''],
+            'page' => ['type' => 'int', 'required' => FALSE, 'default' => '1'],
+            'size' => ['type' => 'int', 'required' => FALSE, 'default' => '10'],
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->get());
 
@@ -105,10 +87,10 @@ class FansController extends BaseController
 
         $this->checkMethod('get');
         $rule = [
-            'fans_id' => ['type' => 'string', 'required' => TRUE, 'default' => ''],
-            'wx_openid' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
-            'wx_name' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
-            'wx_thumb' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
+            'fans_id' => ['type' => 'int', 'required' => TRUE],
+            'wx_openid' => ['type' => 'string', 'required' => FALSE],
+            'wx_name' => ['type' => 'string', 'required' => FALSE],
+            'wx_thumb' => ['type' => 'string', 'required' => FALSE],
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->get());
 
@@ -136,9 +118,9 @@ class FansController extends BaseController
         $this->checkMethod('get');
         $rule = [
             'fans_id' => ['type' => 'string', 'required' => TRUE, 'default' => ''],
-            'wx_openid' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
-            'wx_name' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
-            'wx_thumb' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
+            'wx_openid' => ['type' => 'string', 'required' => FALSE],
+            'wx_name' => ['type' => 'string', 'required' => FALSE],
+            'wx_thumb' => ['type' => 'string', 'required' => FALSE],
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->get());
 
@@ -164,16 +146,16 @@ class FansController extends BaseController
 
         $this->checkMethod('get');
         $rule = [
-            'fans_id' => ['type' => 'string', 'required' => TRUE, 'default' => ''],
-            'wx_openid' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
-            'wx_name' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
+            'fans_id' => ['type' => 'string', 'required' => TRUE],
+            'wx_openid' => ['type' => 'string', 'required' => FALSE],
+            'wx_name' => ['type' => 'string', 'required' => FALSE],
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->get());
 
         //构建查询条件
         $where['fans_id'] = $args['fans_id'];
-        $where['wx_openid'] = $args['wx_openid'];
-        $where['wx_name'] = $args['wx_name'];
+        isset($args['wx_openid']) && $where['wx_openid'] = $args['wx_openid'];
+        isset($args['wx_name']) && $where['wx_name'] = $args['wx_name'];
 
         $this->fansService = new FansService();
         $result = $this->fansService->delFans($where);

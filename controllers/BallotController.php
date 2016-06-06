@@ -102,7 +102,7 @@ class BallotController extends BaseController
             'current_time' => ['type' => 'int', 'required' => FALSE],
             'begin_time' => ['type' => 'int', 'required' => FALSE],
             'end_time' => ['type' => 'int', 'required' => FALSE],
-            'status' => ['type' => 'string', 'required' => FALSE],
+            'status' => ['type' => 'int', 'required' => FALSE],
             'page' => ['type' => 'int', 'required' => FALSE],
             'size' => ['type' => 'int', 'required' => FALSE],
             'order' => ['type' => 'string', 'required' => FALSE],
@@ -225,14 +225,11 @@ class BallotController extends BaseController
             'is_canvass' => ['type' => 'int', 'required' => TRUE],//是否被拉票
             'canvass_id' => ['type' => 'int', 'required' => FALSE],//拉票ID
             'amount' => ['type' => 'int', 'required' => FALSE],//拉票金额
-            'url' => ['type' => 'int', 'required' => FALSE],//拉票分享地址
+            'url' => ['type' => 'string', 'required' => TRUE],//拉票分享地址
             'status' => ['type' => 'int', 'required' => TRUE],//状态，1 有效，2 待支付，3 无效
-            'create_time' => ['type' => 'int', 'required' => FALSE],//拉票申请提交时间
             'active_time' => ['type' => 'int', 'required' => FALSE],//拉票生效时间
-            'end_time' => ['type' => 'int', 'required' => FALSE],//拉票结束时间
-            'refund' => ['type' => 'int', 'required' => FALSE],//退款金额
-            'earn' => ['type' => 'int', 'required' => FALSE],//通过拉票活动赚取金额
-            'new_fans' => ['type' => 'int', 'required' => FALSE],
+            'end_time' => ['type' => 'int', 'required' => TRUE],//拉票结束时间
+            'new_fans' => ['type' => 'int', 'required' => FALSE,'default' => 2],
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->get());
 
@@ -240,16 +237,14 @@ class BallotController extends BaseController
         $data['anchor_id'] = $args['anchor_id'];
         $data['fans_id'] = $args['fans_id'];
         $data['votes'] =  isset($args['votes']) ? $args['votes'] : 1;
+        $data['create_time'] = time();
+        $data['new_fans'] = $args['new_fans'];
+        $data['active_time'] = isset($args['active_time']) ? $args['active_time'] : time();
+        isset($args['end_time']) && $data['end_time'] = $args['end_time'];
         isset($args['is_canvass']) && $data['is_canvass'] = $args['is_canvass'];
         isset($args['amount']) && $data['amount'] = $args['amount'];
         isset($args['url']) && $data['url'] = $args['url'];
         isset($args['status']) && $data['status'] = $args['status'];
-        isset($args['create_time']) && $data['create_time'] = $args['create_time'];
-        isset($args['active_time']) && $data['active_time'] = $args['active_time'];
-        isset($args['end_time']) && $data['end_time'] = $args['end_time'];
-        isset($args['refund']) && $data['refund'] = $args['refund'];
-        isset($args['earn']) && $data['earn'] = $args['earn'];
-        isset($args['new_fans']) && $data['new_fans'] = $args['new_fans'];
 
         $this->ballotService = new BallotService();
         $result = $this->ballotService->addVotes($data);
@@ -272,7 +267,7 @@ class BallotController extends BaseController
             'anchor_id' => ['type' => 'int', 'required' => TRUE],//主播ID
             'fans_id' => ['type' => 'int', 'required' => TRUE],//粉丝ID
             'canvass_id' => ['type' => 'string', 'required' => TRUE],//拉票ID
-            'new_fans' => ['type' => 'int', 'required' => FALSE],
+            'new_fans' => ['type' => 'int', 'required' => FALSE,'default'=>2],
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->get());
 
