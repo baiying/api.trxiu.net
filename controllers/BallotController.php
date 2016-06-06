@@ -66,7 +66,7 @@ class BallotController extends BaseController
             'description' => ['type' => 'string', 'required' => FALSE],
             'begin_time' => ['type' => 'int', 'required' => FALSE],
             'end_time' => ['type' => 'int', 'required' => FALSE],
-            'status' => ['type' => 'string', 'required' => FALSE],
+            'status' => ['type' => 'int', 'required' => FALSE],
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->get());
 
