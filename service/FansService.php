@@ -42,13 +42,21 @@ class FansService extends BaseService
         if(!empty($res['data'])) {
             return $this->export(false, '该用户已注册');
         }
-        $data['create_time'] = time();
-        return $curd->createRecord($modelName, $data);
+        $data = (object)$data;
+        $data->create_time = time();
+        $where['wx_name'] = $data->wx_name;
+        $result = $fans->getRow('*',$where);
+        if($result) return $this->export(false,'用户已存在',$result);
+        $result = $fans->insertData($data);
+        if(!$result){
+            return $this->export(false,'插入失败',$result);
+        }
+        return $this->export(true,'成功',$result);
     }
 
     /**
      * @param array $where
-     * @return 获取粉丝(按条件获取一行)
+     *  获取粉丝(按条件获取一行)
      */
     public function getFans($where = array()){
         $fans = new Fans();
@@ -62,7 +70,7 @@ class FansService extends BaseService
     /**
      * @param array $data
      * @param array $where
-     * @return 更新粉丝信息
+     * 更新粉丝信息
      */
     public function upFans($data = array(),$where = array()){
         $fans = new Fans();
@@ -79,7 +87,7 @@ class FansService extends BaseService
 
     /**
      * @param array $where
-     * @return 删除粉丝
+     * 删除粉丝
      */
     public function delFans($where = array()){
         $fans = new Fans();

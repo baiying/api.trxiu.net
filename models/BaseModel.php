@@ -111,7 +111,6 @@ class BaseModel extends \yii\db\ActiveRecord
     public function insertData($data,$dataValueIsNull = false)
     {
         if (is_array($data)) $data = (object)$data;
-        $data->create_time = time();
         if($dataValueIsNull == false){
             foreach ($data as $k => $v) {
                 if (is_null($v)) {
