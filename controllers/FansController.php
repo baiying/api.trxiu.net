@@ -12,6 +12,7 @@ use Yii;
 use app\components\ApiCode;
 use app\service\FansService;
 use app\controllers\BaseController;
+use app\service\CurdService;
 
 class FansController extends BaseController
 {
@@ -125,6 +126,58 @@ class FansController extends BaseController
         }
         $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
 
+    }
+    /**
+     * register
+     * 注册用户信息
+     * 如果该用户已经注册为粉丝，则直接返回粉丝ID
+     * @param string $data['openid']    微信账号openid
+     * @param string $data['nickname']  微信账号昵称
+     * @param number $data['sex']       性别
+     * @param string $data['country']   国家
+     * @param string $data['province']  省份
+     * @param string $data['city']      城市
+     * @param string $data['headimgurl']头像地址
+     * @param string $data['unionid']   unionid
+     * @param string $data['access_token']  access_token
+     * @param string $data['refresh_token'] refresh_token
+     * @param string $data['expires_in']    授权有效时间（秒）
+     * @return array
+     */
+    public function actionRegister() {
+        $this->checkMethod('post');
+        $rule = [
+            'openid'        => ['type'=>'string', 'required'=>true, 'default'=>''],
+            'nickname'      => ['type'=>'string', 'required'=>false, 'default'=>''],
+            'sex'           => ['type'=>'int', 'required'=>false, 'default'=>1],
+            'country'       => ['type'=>'string', 'required'=>false, 'default'=>''],
+            'province'      => ['type'=>'string', 'required'=>false, 'default'=>''],
+            'city'          => ['type'=>'string', 'required'=>false, 'default'=>''],
+            'headimgurl'    => ['type'=>'string', 'required'=>false, 'default'=>''],
+            'unionid'       => ['type'=>'string', 'required'=>false, 'default'=>''],
+            'access_token'  => ['type'=>'string', 'required'=>false, 'default'=>''],
+            'refresh_token' => ['type'=>'string', 'required'=>false, 'default'=>''],
+            'expires_in'    => ['type'=>'int', 'required'=>false, 'default'=>0],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->post());
+        
+        // 查询用户信息是否已经注册，如果已注册则直接返回粉丝ID，否则将用户注册为粉丝并返回粉丝ID
+        $curd = new CurdService();
+        $res = $curd->fetchOne('app\models\Fans', ['wx_openid'=>$args['openid']]);
+        if(!empty($res['data'])) {
+            // 用户已注册则直接返回粉丝ID
+            $fans = $res['data'];
+            $this->renderJson(ApiCode::SUCCESS, $res['message'], ['fans_id'=>$fans->fans_id]);
+            
+        } else {
+            // 用户未注册则用户信息入库
+            $service = new FansService();
+            $res = $service->register($args);
+            if(!$res['status']) {
+                $this->renderJson(ApiCode::ERROR_API_FAILED, '用户信息注册失败');
+            } 
+            $this->renderJson(ApiCode::SUCCESS, '用户信息注册成功', ['fans_id'=>$res['data']['fans_id']]);
+        }
     }
 
     /**

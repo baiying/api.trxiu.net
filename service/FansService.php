@@ -36,21 +36,14 @@ class FansService extends BaseService
      * @return 添加粉丝
      */
     public function addFans($data = array()){
-
-        $fans = new Fans();
-        $fans->attributes = $data;
-        if(!$fans->validate()) {
-            return $this->export(false,'属性验证失败',$fans->errors);
+        $modelName = "app\models\Fans";
+        $curd = new CurdService();
+        $res = $curd->fetchOne($modelName, ['wx_openid'=>$data['wx_openid']]);
+        if(!empty($res['data'])) {
+            return $this->export(false, '该用户已注册');
         }
-        $data = (object)$data;
-        $where['wx_name'] = $data->wx_name;
-        $result = $fans->getRow('*',$where);
-        if($result) return $this->export(false,'数据已存在',$result);
-        $result = $fans->insertData($data);
-        if(!$result){
-            return $this->export(false,'插入失败',$result);
-        }
-        return $this->export(true,'成功',$result);
+        $data['create_time'] = time();
+        return $curd->createRecord($modelName, $data);
     }
 
     /**
@@ -98,6 +91,40 @@ class FansService extends BaseService
             return $this->export(false,'找不到数据',$result);
         }
         return $this->export(true,'成功',$result);
+    }
+    /**
+     * 注册粉丝
+     * @param string $data['openid']    微信账号openid
+     * @param string $data['nickname']  微信账号昵称
+     * @param number $data['sex']       性别
+     * @param string $data['country']   国家
+     * @param string $data['province']  省份
+     * @param string $data['city']      城市
+     * @param string $data['headimgurl']头像地址
+     * @param string $data['unionid']   unionid
+     * @param string $data['access_token']  access_token
+     * @param string $data['refresh_token'] refresh_token
+     * @param string $data['expires_in']    授权有效时间（秒）
+     * @return array
+     */
+    public function register($data = []) {
+        if(!isset($data['openid'])) return $this->export(false, '缺少openid');
+        $modelName = "app\models\Fans";
+        $params = [];
+        $params['wx_openid']        = $data['openid'];
+        $params['wx_name']          = $data['nickname'];
+        $params['wx_sex']           = $data['sex'];
+        $params['wx_country']       = $data['country'];
+        $params['wx_province']      = $data['province'];
+        $params['wx_city']          = $data['city'];
+        $params['wx_thumb']         = $data['headimgurl'];
+        $params['wx_unionid']       = $data['unionid'];
+        $params['wx_access_token']  = $data['access_token'];
+        $params['wx_refresh_token'] = $data['refresh_token'];
+        $params['wx_access_token_expire'] = time() + $data['expires_in'];
+        $params['create_time']      = time();
+        $curd = new CurdService();
+        return $curd->createRecord($modelName, $params);
     }
 
 }
