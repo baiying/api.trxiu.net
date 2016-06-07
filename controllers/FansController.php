@@ -72,9 +72,9 @@ class FansController extends BaseController
 
         $this->checkMethod('get');
         $rule = [
-            'wx_openid' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
-            'wx_name' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
-            'wx_thumb' => ['type' => 'string', 'required' => FALSE, 'default' => ''],
+            'wx_openid' => ['type' => 'string', 'required' => FALSE],
+            'wx_name' => ['type' => 'string', 'required' => FALSE],
+            'wx_thumb' => ['type' => 'string', 'required' => FALSE],
             'page' => ['type' => 'int', 'required' => FALSE, 'default' => '1'],
             'size' => ['type' => 'int', 'required' => FALSE, 'default' => '10'],
         ];
@@ -166,7 +166,7 @@ class FansController extends BaseController
         isset($args['wx_province']) && $data['wx_province'] = $args['wx_province'];//省份
         isset($args['wx_city']) && $data['wx_city'] = $args['wx_city'];//城市
         isset($args['wx_unionid']) && $data['wx_unionid '] = $args['wx_unionid'];//微信账号unionid
-        
+
         $this->fansService = new FansService();
         $result = $this->fansService->upFans($data,$where);
         if($result['status']==false){
