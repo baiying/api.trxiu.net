@@ -21,7 +21,7 @@ class BallotController extends BaseController
     /**
      * 初始化活动
      */
-    public function actionInitballot(){
+    public function actionInitBallot(){
 
         $result = $data = $where = array();
 
@@ -55,7 +55,7 @@ class BallotController extends BaseController
     /**
      * 修改活动内容
      */
-    public function actionUpballot(){
+    public function actionUpBallot(){
 
         $result = $data = $where = array();
 
@@ -93,7 +93,7 @@ class BallotController extends BaseController
     /**
      * 获取当前活动列表
      */
-    public function actionGetballotlist(){
+    public function actionGetBallotList(){
 
         $result = $data = $where = array();
 
@@ -139,7 +139,7 @@ class BallotController extends BaseController
     /**
      * 获取当前活动信息
      */
-    public function actionGetballotdetail(){
+    public function actionGetBallotDetail(){
 
         $result = $data = $where = array();
 
@@ -162,7 +162,7 @@ class BallotController extends BaseController
     /**
      *添加参赛主播
      */
-    public function actionBallotaddanchor(){
+    public function actionBallotAddAnchor(){
 
         $result = $data = $where = array();
 
@@ -187,7 +187,7 @@ class BallotController extends BaseController
     /**
      * 主播退赛
      */
-    public function actionBallotdelanchor(){
+    public function actionBallotDelAnchor(){
 
         $result = $data = $where = array();
 
@@ -212,7 +212,7 @@ class BallotController extends BaseController
     /**
      * 投票
      */
-    public function actionAddvotes(){
+    public function actionAddVotes(){
 
         $result = $data = $where = array();
 
@@ -255,9 +255,16 @@ class BallotController extends BaseController
     }
 
     /**
+     * 发送红包
+     */
+    public function actionPushRedPacket(){
+
+    }
+
+    /**
      * 领取红包
      */
-    public function actionGetredpacket(){
+    public function actionGetRedPacket(){
 
         $result = $data = $where = array();
 

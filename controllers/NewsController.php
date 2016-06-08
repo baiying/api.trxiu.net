@@ -25,7 +25,7 @@ class NewsController extends BaseController
     /**
      * 主播发布动态
      */
-    public function actionAddanchornews(){
+    public function actionAddAnchorNews(){
 
         $result = $data = $where = array();
 
@@ -56,7 +56,7 @@ class NewsController extends BaseController
     /**
      * 动态评论
      */
-    public function actionNewscomment(){
+    public function actionNewsComment(){
 
         $result = $data = $where = array();
 
@@ -90,7 +90,7 @@ class NewsController extends BaseController
     /**
      * 获取主播动态页(每条动态获取前三条评论)
      */
-    public function actionGetanchornews(){
+    public function actionGetAnchorNews(){
 
         $result = $data = $where = $ext = array();
 
@@ -122,7 +122,7 @@ class NewsController extends BaseController
     /**
      * 获取动态评论
      */
-    public function actionGetnewscommentlist(){
+    public function actionGetNewsCommentList(){
 
         $result = $data = $where = $ext = array();
 
@@ -154,7 +154,7 @@ class NewsController extends BaseController
     /**
      * 获取当前评论信息
      */
-    public function actionGetcomment(){
+    public function actionGetComment(){
 
         $result = $data = $where = $ext = array();
 
