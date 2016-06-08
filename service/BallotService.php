@@ -364,6 +364,73 @@ class BallotService extends BaseService
 
     }
 
+
+    /**
+     * 查看当前红包
+     * @param $canvass_id
+     */
+    public function checkRedPacket($canvass_id){
+
+        $this->ballotEAnchor = new BallotEAnchor();
+        $this->ballot = new Ballot();
+        $this->canvass = new Canvass();
+        $this->vote_log = new VoteLog();
+        $this->fans = new Fans();
+        $this->anchor = new Anchor();
+        $where['canvass_id'] = $canvass_id;
+        $redPacket = $this->canvass->getRow('*',$where);
+        if(!$redPacket||$redPacket['amount']==0){
+            return $this->export(false,'您领取的红包不存在，或已经过期',$redPacket);
+        }
+        $bollotWhere['ballot_id'] = $redPacket['ballot_id'];
+        $ballot = $this->ballot->getRow('*',$bollotWhere);
+        if(!$ballot){
+            return $this->export(false,'活动不存在',$ballot);
+        }
+        $ballotEAnchorWhere['anchor_id'] = $redPacket['anchor_id'];
+        $ballotEAnchorWhere['ballot_id'] = $redPacket['ballot_id'];
+        $ballotEAnchor = $this->ballotEAnchor->getRow('*',$ballotEAnchorWhere);
+        if(!$ballotEAnchor){
+            return $this->export(false,'该主播没有参加活动',$ballotEAnchor);
+        }
+        $anchorWhere['anchor_id'] = $redPacket['anchor_id'];
+        $anchor = $this->anchor->getRow('*',$anchorWhere);
+        if(!$anchor){
+            return $this->export(false,'主播不存在',$anchor);
+        }
+        $fansWhere['fans_id'] = $redPacket['fans_id'];
+        $fans = $this->ballot->getRow('*',$bollotWhere);
+        if(!$fans){
+            return $this->export(false,'该用户不存在',$fans);
+        }
+        $amount = $redPacket['amount'];
+        $vote_logWhere['canvass_id'] = $canvass_id;
+        $vote_logList = $this->vote_log->getList('*',$vote_logWhere);
+        $countNum = count($vote_logList);
+        $lost = 0;
+        foreach ($vote_logList as $item){
+            $lost += $item['earn'];
+        }
+        $total = $num = $this->computeNum($amount);
+        $residue = $num - $countNum;
+        $total = $total-$lost;
+        $rs['amount'] = $amount;
+        $rs['num'] = $num;
+        $rs['countNum'] = $countNum;
+        $rs['lost'] = $lost;
+        $rs['residue'] = $residue;
+        $rs['total'] = $total;
+        $rs['ballot'] = $ballot;
+        $rs['redPacket'] = $redPacket;
+        $rs['anchor'] = $anchor;
+        $rs['fans'] = $fans;
+        $rs['vote_logList'] = $vote_logList;
+
+        return $this->export(true,'成功',$rs);
+
+
+    }
+
     /**
      * 计算红包个数
      */

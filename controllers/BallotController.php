@@ -254,12 +254,6 @@ class BallotController extends BaseController
         $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
     }
 
-    /**
-     * 发送红包
-     */
-    public function actionPushRedPacket(){
-
-    }
 
     /**
      * 领取红包
@@ -282,6 +276,7 @@ class BallotController extends BaseController
         $data['anchor_id'] = $args['anchor_id'];
         $data['fans_id'] = $args['fans_id'];
         $data['canvass_id'] = $args['canvass_id'];
+        $data['new_fans'] = $args['new_fans'];
         $this->ballotService = new BallotService();
 
         $result = $this->ballotService->getRedPacket($data);
@@ -289,5 +284,30 @@ class BallotController extends BaseController
             $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
         }
         $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
+    }
+
+
+    /**
+     * 查看
+     */
+    public function actionCheckRedPacket(){
+
+        $result = $data = $where = array();
+
+        $this->checkMethod('get');
+        $rule = [
+            'canvass_id' => ['type' => 'string', 'required' => TRUE],//拉票ID
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+
+        $canvass_id = $args['canvass_id'];
+        $this->ballotService = new BallotService();
+
+        $result = $this->ballotService->checkRedPacket($canvass_id);
+        if($result['status']==false){
+            $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
+        }
+        $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
+
     }
 }
