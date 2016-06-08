@@ -24,7 +24,7 @@ class AnchorController extends BaseController
     /**
      * 添加新主播
      */
-    public function actionAddanchor(){
+    public function actionAddAnchor(){
 
         $result = $data = $where = array();
 
@@ -59,7 +59,7 @@ class AnchorController extends BaseController
     /**
      * 修改主播资料
      */
-    public function actionUpdateanchor(){
+    public function actionUpDateAnchor(){
 
         $result = $data = $where = array();
 
@@ -98,7 +98,7 @@ class AnchorController extends BaseController
     /**
      * 获取主播资料页
      */
-    public function actionGetanchorinformation(){
+    public function actionGetAnchorInformation(){
 
         $result = $data = $where = $ext = array();
 
@@ -124,7 +124,7 @@ class AnchorController extends BaseController
     /**
      * 获取主播列表
      */
-    public function actionGetanchorlist(){
+    public function actionGetAnchorList(){
 
         $result = $data = $where = $ext = array();
 
@@ -153,7 +153,7 @@ class AnchorController extends BaseController
     /**
      * 获取主播列表并获取最新一条动态
      */
-    public function actionGetanchorlistandnews(){
+    public function actionGetAnchorListAndNews(){
 
         $result = $data = $where = $ext = array();
 

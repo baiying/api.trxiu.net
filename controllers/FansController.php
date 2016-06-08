@@ -22,7 +22,7 @@ class FansController extends BaseController
     /**
      * 添加粉丝
      */
-    public function actionAddfans(){
+    public function actionAddFans(){
         $result = $data = $where = array();
 
         $this->checkMethod('get');
@@ -68,7 +68,7 @@ class FansController extends BaseController
     /**
      * 获取粉丝列表
      */
-    public function actionGetfanslist(){
+    public function actionGetFansList(){
         $result = $data = $where = $ext = array();
 
         $this->checkMethod('get');
@@ -102,7 +102,7 @@ class FansController extends BaseController
     /**
      * 根据ID获取粉丝
      */
-    public function actionGetfansbyid(){
+    public function actionGetFansById(){
         $result = $data = $where = $ext = array();
 
         $this->checkMethod('get');
@@ -184,7 +184,7 @@ class FansController extends BaseController
     /**
      * 更新粉丝信息
      */
-    public function actionUpfansbyid(){
+    public function actionUpFansById(){
         $result = $data = $where = $ext = array();
 
         $this->checkMethod('get');
@@ -231,7 +231,7 @@ class FansController extends BaseController
     /**
      * 删除粉丝
      */
-    public function actionDelfansbyid(){
+    public function actionDelFansById(){
         $result = $data = $where = $ext = array();
 
         $this->checkMethod('get');
