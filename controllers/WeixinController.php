@@ -29,20 +29,23 @@ class WeixinController extends NoAuthBaseController {
         }
     }
     /**
-     * get-oauth-redirect
+     * get-oauth-redirect-url
      * oauth 授权跳转接口
      * @param string $redirect_url  授权后重定向的回调链接地址
      * @param string $state         重定向后会带上state参数
+     * @param string $scope         网页授权方式，取值：snsapi_base, snsapi_userinfo
      * @return array
      */
-    public function actionGetOauthRedirect() {
-        $authUrl = Yii::$app->weixin->getOauthRedirect('http://api.e2047.com/weixin/get-code/', 'callbackstate');
+    public function actionGetOauthRedirectUrl() {
+        $this->checkMethod('get');
+        $rule = [
+            'redirect_url'  => ['type'=>'string', 'required'=>true, 'default'=>''],
+            'state'         => ['type'=>'string', 'required'=>true, 'default'=>''],
+            'scope'         => ['type'=>'string', 'required'=>false, 'default'=>'snsapi_userinfo']
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        $authUrl = Yii::$app->weixin->getOauthRedirect($args['redirect_url'], $args['state'], $args['scope']);
         $this->renderJson(ApiCode::SUCCESS, '授权跳转地址获取成功', ['authUrl'=>$authUrl]);
-    }
-    
-    public function actionGetCode() {
-        var_dump(Yii::$app->request->get());
-        exit;
     }
     /**
      * oauth-access-token

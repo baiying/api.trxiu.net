@@ -81,7 +81,7 @@ class BaseController extends Controller {
         }
         $dataStr .= $spl . "salt={$hmacKey}";
         if($hmac != strtoupper(md5($dataStr))) {
-            $this->renderJson(ApiCode::ERROR_API_DENY, 'Invalid hmac.');
+            $this->renderJson(ApiCode::ERROR_API_DENY, 'Invalid hmac');
         }
         // 从传递参数数组中清除_appid和_hmac参数，防止影响接口程序
         if(Yii::$app->request->isGet) {
