@@ -399,7 +399,7 @@ class BallotService extends BaseService
             return $this->export(false,'主播不存在',$anchor);
         }
         $fansWhere['fans_id'] = $redPacket['fans_id'];
-        $fans = $this->ballot->getRow('*',$bollotWhere);
+        $fans = $this->fans->getRow('*',$fansWhere);
         if(!$fans){
             return $this->export(false,'该用户不存在',$fans);
         }
