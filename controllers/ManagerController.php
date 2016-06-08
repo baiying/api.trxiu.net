@@ -75,4 +75,25 @@ class ManagerController extends BaseController {
             $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message'], $res['data']);
         }
     }
+    /**
+     * login
+     * 管理员登录接口
+     * @param string $username
+     * @param string $password
+     */
+    public function actionLogin() {
+        $this->checkMethod('post');
+        $rule = [
+            'username' => ['type'=>'string', 'required'=>true],
+            'password' => ['type'=>'string', 'required'=>true]
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->post());
+        $service = new ManagerService();
+        $res = $service->login($args['username'], $args['password']);
+        if($res['status']) {
+            $this->renderJson(ApiCode::SUCCESS, $res['message'], $res['data']);
+        } else {
+            $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message']);
+        }
+    }
 }

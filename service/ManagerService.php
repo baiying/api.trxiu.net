@@ -95,5 +95,28 @@ class ManagerService extends BaseService {
 	    $service = new CurdService();
 	    return $service->fetchOne('app\models\Manager', $where);
 	}
+	/**
+	 * login
+	 * 验证登录名及密码的正确性
+	 * @param string $username
+	 * @param string $password
+	 * @return Ambigous <multitype:, multitype:unknown string >
+	 */
+	public function login($username, $password) {
+	    $curd = new CurdService();
+	    $res = $curd->fetchOne('app\models\Manager', ['username'=>$username]);
+	    if(empty($res['data'])) {
+	        return $this->export(false, '登录名不存在');
+	    }
+	    $manager = $res['data'];
+	    if(!$manager->validatePassword($password)) {
+	        return $this->export(false, '登录名或密码错误');
+	    }
+	    // 更新最新登录时间
+	    $manager->login_time = time();
+	    $manager->save();
+	    
+	    return $this->export(true, '登录成功', $manager);
+	}
 	
 }
