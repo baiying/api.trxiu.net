@@ -35,6 +35,35 @@ class ManagerController extends BaseController {
         }
     }
     /**
+     * edit
+     * 编辑管理员信息接口
+     * @param string $username  管理员登录名
+     * @param string $password  管理员登录密码
+     * @param number $managerid 管理员ID
+     * @return array
+     */
+    public function actionEdit() {
+        // 设置接口访问方式
+        $this->checkMethod('post');
+        // 设置接口参数白名单
+        $rule = [
+            'username' => ['type' => 'string', 'required' => TRUE],
+            'password' => ['type' => 'string', 'required' => TRUE],
+            'managerid'=> ['type' => 'int', 'required' => TRUE]
+        ];
+        $data = $this->getRequestData($rule, Yii::$app->request->post());
+        // 注册管理员信息
+        $service = new ManagerService();
+        $res = $service->editManager($data);
+        if($res['status']) {
+            // 返回注册成功结果（JSON格式）
+            $this->renderJson(ApiCode::SUCCESS, "{$data['username']} 信息成功", $res['data']);
+        } else {
+            // 返回注册失败结果（JSON格式）
+            $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message'], $res['data']);
+        }
+    }
+    /**
      * search
      * 查询管理员列表
      * @param string $username     管理员登录名
