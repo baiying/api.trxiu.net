@@ -52,7 +52,7 @@ class ManagerService extends BaseService {
 	    $modelName = "app\models\Manager";
 	    $service = new CurdService();
 	    // 获取管理员信息
-	    $resManager = $service->fetchOne($modelName, ['managerId'=>$managerId]);
+	    $resManager = $service->fetchOne($modelName, ['manager_id'=>$managerId]);
 	    if(empty($resManager['data'])) {
 	        return $this->export(FALSE, "未查询到管理员信息");
 	    }

@@ -19,8 +19,10 @@ class ManagerController extends BaseController {
         $this->checkMethod('post');
         // 设置接口参数白名单
         $rule = [
-            'username' => ['type' => 'string', 'required' => TRUE],
-            'password' => ['type' => 'string', 'required' => TRUE]
+            'username'      => ['type' => 'string', 'required' => TRUE],
+            'password'      => ['type' => 'string', 'required' => TRUE],
+            'mobile'        => ['type' => 'string', 'default' => ''],
+            'real_name'     => ['type' => 'string', 'default' => ''],
         ];
         $data = $this->getRequestData($rule, Yii::$app->request->post());
         // 注册管理员信息
@@ -49,12 +51,16 @@ class ManagerController extends BaseController {
         $rule = [
             'username' => ['type' => 'string', 'required' => TRUE],
             'password' => ['type' => 'string', 'required' => TRUE],
+            'mobile'   => ['type' => 'string', 'default' => ''],
+            'real_name'=> ['type' => 'string', 'default' => ''],
             'managerid'=> ['type' => 'int', 'required' => TRUE]
         ];
         $data = $this->getRequestData($rule, Yii::$app->request->post());
+        $managerId = $data['managerid'];
+        unset($data['managerid']);
         // 注册管理员信息
         $service = new ManagerService();
-        $res = $service->editManager($data);
+        $res = $service->editManager($managerId, $data);
         if($res['status']) {
             // 返回注册成功结果（JSON格式）
             $this->renderJson(ApiCode::SUCCESS, "{$data['username']} 信息成功", $res['data']);
