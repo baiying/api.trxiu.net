@@ -131,4 +131,25 @@ class ManagerController extends BaseController {
             $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message']);
         }
     }
+    /**
+     * change-status
+     * 修改管理员账号状态
+     * @param number $managerid     管理员ID
+     * @param number $status        状态，1 有效，2 冻结
+     */
+    public function actionChangeStatus() {
+        $this->checkMethod('post');
+        $rule = [
+            'managerid' => ['type'=>'int', 'required'=>true],
+            'status' => ['type'=>'int', 'required'=>true]
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->post());
+        $service = new ManagerService();
+        $res = $service->editManager($args['managerid'], ['status'=>$args['status']]);
+        if($res['status']) {
+            $this->renderJson(ApiCode::SUCCESS, $res['message'], $res['data']);
+        } else {
+            $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message']);
+        }
+    }
 }
