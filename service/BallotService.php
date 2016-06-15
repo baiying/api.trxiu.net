@@ -31,6 +31,8 @@ class BallotService extends BaseService
      * 初始化活动
      */
     public function initBallot($data){
+        isset($data['begin_time']) && $data['begin_time'] = (int)strtotime($data['begin_time']);
+        isset($data['end_time']) && $data['end_time'] = (int)strtotime($data['end_time']);
         $this->ballot = new Ballot();
         $this->ballot->attributes = $data;
         if(!$this->ballot->validate()) {
@@ -50,21 +52,22 @@ class BallotService extends BaseService
             return $this->export(false,'插入失败',$result);
         }
         return $this->export(true,'成功',$result);
+        
     }
 
     /**
      * 修改活动信息
      */
     public function upBallot($data,$where){
+        isset($data['begin_time']) && $data['begin_time'] = (int)strtotime($data['begin_time']);
+        isset($data['end_time']) && $data['end_time'] = (int)strtotime($data['end_time']);
         $this->ballot = new Ballot();
         $this->ballot->attributes = $data;
         if(!$this->ballot->validate()) {
             return $this->export(false,'属性验证失败',$this->ballot->errors);
         }
-        $data = (object)$data;
+        // $data = (object)$data;
 //        $data->update_time = time();
-        isset($data->begin_time) && $data->begin_time = strtotime($data->begin_time);
-        isset($data->end_time) && $data->end_time = strtotime($data->end_time);
         $result = $this->ballot->updateData($data,$where);
         if(!$result){
             return $this->export(false,'数据无变化',$result);
