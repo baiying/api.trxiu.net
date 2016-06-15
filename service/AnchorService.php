@@ -71,6 +71,14 @@ class AnchorService extends BaseService
      */
     public function getAnchorList($where,$ext){
         $this->anchor = new Anchor();
+        if(isset($ext['limit']['size']) && $ext['limit']['size']=='max'){
+            unset($ext['limit']);
+            $result = $this->anchor->getList('*',$where,$ext);
+            if(!$result){
+                return $this->export(false,'获取失败',$result);
+            }
+            return $this->export(true,'成功',$result);
+        }
         $result = $this->anchor->getListAndLimit('*',$where,$ext);
         if(!$result){
             return $this->export(false,'获取失败',$result);
