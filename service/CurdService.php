@@ -34,7 +34,7 @@ class CurdService extends BaseService {
      * @return array
      */
     public function updateRecord($modelName, $filter = [], $data = []) {
-        if(empty($filer)) {
+        if(empty($filter)) {
             return $this->export(FALSE, '缺少filter参数');
         }
         $model = $modelName::findOne($filter);
