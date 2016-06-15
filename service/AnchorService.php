@@ -71,19 +71,42 @@ class AnchorService extends BaseService
      */
     public function getAnchorList($where,$ext){
         $this->anchor = new Anchor();
+        $this->fans = new Fans();
         if(isset($ext['limit']['size']) && $ext['limit']['size']=='max'){
             unset($ext['limit']);
-            $result = $this->anchor->getList('*',$where,$ext);
-            if(!$result){
-                return $this->export(false,'获取失败',$result);
+            $anchorList = $this->anchor->getList('*',$where,$ext);
+            $fansList = $this->fans->getList('*',$where);
+            foreach ($anchorList as $key=>$value){
+                $anchorList[$key]['anchor_name'] = '';
+                $anchorList[$key]['thumb'] = '';
+                foreach ($fansList as $item){
+                    if($item['anchor_id'] == $value['anchor_id']){
+                        $anchorList[$key]['anchor_name'] = $item['wx_name'];
+                        $anchorList[$key]['thumb'] = $item['wx_thumb'];
+                    }
+                }
             }
-            return $this->export(true,'成功',$result);
+            if(!$anchorList){
+                return $this->export(false,'获取失败',$anchorList);
+            }
+            return $this->export(true,'成功',$anchorList);
         }
-        $result = $this->anchor->getListAndLimit('*',$where,$ext);
-        if(!$result){
-            return $this->export(false,'获取失败',$result);
+        $anchorList = $this->anchor->getListAndLimit('*',$where,$ext);
+        $fansList = $this->fans->getList('*',$where);
+        foreach ($anchorList['list'] as $key=>$value){
+            $anchorList['list'][$key]['anchor_name'] = '';
+            $anchorList['list'][$key]['thumb'] = '';
+            foreach ($fansList as $item){
+                if($item['anchor_id'] == $value['anchor_id']){
+                    $anchorList['list'][$key]['anchor_name'] = $item['wx_name'];
+                    $anchorList['list'][$key]['thumb'] = $item['wx_thumb'];
+                }
+            }
         }
-        return $this->export(true,'成功',$result);
+        if(!$anchorList){
+            return $this->export(false,'获取失败',$anchorList);
+        }
+        return $this->export(true,'成功',$anchorList);
     }
 
     /**
@@ -165,7 +188,19 @@ class AnchorService extends BaseService
     public function getAnchorListAndNews($where,$ext){
         $this->anchor = new Anchor();
         $this->anchorNews = new AnchorNews();
+        $this->fans = new Fans();
         $anchorList = $this->anchor->getListAndLimit('*',$where,$ext);
+        $fansList = $this->fans->getList('*',$where);
+        foreach ($anchorList['list'] as $key=>$value){
+            $anchorList['list'][$key]['anchor_name'] = '';
+            $anchorList['list'][$key]['thumb'] = '';
+            foreach ($fansList as $item){
+                if($item['anchor_id'] == $value['anchor_id']){
+                    $anchorList['list'][$key]['anchor_name'] = $item['wx_name'];
+                    $anchorList['list'][$key]['thumb'] = $item['wx_thumb'];
+                }
+            }
+        }
         if(!$anchorList){
             return $this->export(false,'获取失败',$anchorList);
         }
@@ -199,10 +234,14 @@ class AnchorService extends BaseService
      */
     public function getAnchorInformation($where){
         $this->anchor = new Anchor();
+        $this->fans = new Fans();
         $result = $this->anchor->getRow('*',$where);
         if(!$result){
             return $this->export(false,'获取失败',$result);
         }
+        $fans = $this->fans->getRow('*',$result['anchor_id']);
+        $result['anchor_name'] = $fans['wx_name'];
+        $result['thumb'] = $fans['wx_thumb'];
         return $this->export(true,'成功',$result);
     }
 
