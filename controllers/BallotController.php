@@ -72,11 +72,11 @@ class BallotController extends BaseController
 
         //构建查询条件
         $where['ballot_id'] = $args['ballot_id'];
-        $data['ballot_name'] = $args['ballot_name'];
-        $data['description'] = $args['description'];
-        $data['begin_time'] = date('Y-m-d H:i:s',$args['begin_time']);
-        $data['end_time'] = date('Y-m-d H:i:s',$args['end_time']);
-        $data['status'] = $args['status'];
+        isset($args['ballot_name']) && $data['ballot_name'] = $args['ballot_name'];
+        isset($args['description']) && $data['description'] = $args['description'];
+        isset($args['begin_time']) && $data['begin_time'] = date('Y-m-d H:i:s',$args['begin_time']);
+        isset($args['end_time']) && $data['end_time'] = date('Y-m-d H:i:s',$args['end_time']);
+        isset($args['status']) && $data['status'] = $args['status'];
         foreach ($data as $k => $v){
             if (!$v){
                 unset($data[$k]);
