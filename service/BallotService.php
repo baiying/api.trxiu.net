@@ -103,6 +103,7 @@ class BallotService extends BaseService
         $this->ballot = new Ballot();
         $this->ballotEAnchor = new BallotEAnchor();
         $this->anchor = new Anchor();
+        $this->fans = new Fans();
 
         // 所有的查询都在主服务器上执行
         $result = $this->ballot->getRow('*',$where);
@@ -113,6 +114,22 @@ class BallotService extends BaseService
         }
         if(isset($anchorIdList)){
             $anchorInformationList = $this->anchor->getList();
+            $anchorWhere = array();
+            foreach ($anchorInformationList as $item){
+                $anchorWhere['anchor_id'][] = $item['anchor_id'];
+            }
+            $fansList = $this->fans->getList('*',$anchorWhere);
+            foreach ($anchorInformationList as $key=>$value){
+                $anchorInformationList[$key]['anchor_name'] = '';
+                $anchorInformationList[$key]['thumb'] = '';
+                foreach ($fansList as $item){
+                    if($item['anchor_id'] == $value['anchor_id']){
+                        $anchorInformationList[$key]['anchor_name'] = $item['wx_name'];
+                        $anchorInformationList[$key]['thumb'] = $item['wx_thumb'];
+                    }
+                }
+            }
+//            echo json_encode($anchorInformationList);exit;
         }
         if(isset($anchorIdList) && isset($anchorInformationList)){
             foreach ($result['anchorList'] as $key => $value){
@@ -120,6 +137,19 @@ class BallotService extends BaseService
                     if ($item['anchor_id'] == $value['anchor_id']){
                         $result['anchorList'][$key]['Information'] = $item;
                     }
+                }
+                if(!isset($result['anchorList'][$key]['Information'])){
+                    $result['anchorList'][$key]['Information']['anchor_id'] = $value['anchor_id'];
+                    $result['anchorList'][$key]['Information']['backimage'] = '';
+                    $result['anchorList'][$key]['Information']['qrcode'] = '';
+                    $result['anchorList'][$key]['Information']['platform'] = '';
+                    $result['anchorList'][$key]['Information']['broadcast'] = '';
+                    $result['anchorList'][$key]['Information']['description'] = '';
+                    $result['anchorList'][$key]['Information']['create_time'] = '';
+                    $result['anchorList'][$key]['Information']['modify_time'] = '';
+                    $result['anchorList'][$key]['Information']['last_time'] = '';
+                    $result['anchorList'][$key]['Information']['anchor_name'] = '';
+                    $result['anchorList'][$key]['Information']['thumb'] = '';
                 }
 
             }
