@@ -66,7 +66,7 @@ class AnchorController extends BaseController
         $this->checkMethod('get');
         $rule = [
             'anchor_id' => ['type' => 'int', 'required' => TRUE],
-            'anchor_name' => ['type' => 'string', 'required' => TRUE],
+            'anchor_name' => ['type' => 'string', 'required' => FALSE],
             'thumb' => ['type' => 'string', 'required' => FALSE],
             'backimage' => ['type' => 'string', 'required' => FALSE],
             'qrcode' => ['type' => 'string', 'required' => FALSE],
@@ -139,7 +139,7 @@ class AnchorController extends BaseController
         $ext['limit']['size'] = isset($args['size']) ? $args['size'] : 10;
         //计算limit数据
         $ext['limit']['start'] = ($ext['limit']['page'] - 1) * $ext['limit']['size'];
-        $ext['orderBy'] = ['modify_time'=>'desc'];
+        $ext['orderBy'] = 'modify_time DESC';
         $this->anchorService = new AnchorService();
         $result = $this->anchorService->getAnchorList($where,$ext);
         if($result['status']==false){
