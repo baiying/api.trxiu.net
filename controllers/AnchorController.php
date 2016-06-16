@@ -59,7 +59,7 @@ class AnchorController extends BaseController
     /**
      * 修改主播资料
      */
-    public function actionUpDateAnchor(){
+    public function actionUpdateAnchor(){
 
         $result = $data = $where = array();
 
@@ -77,17 +77,16 @@ class AnchorController extends BaseController
         $args = $this->getRequestData($rule, Yii::$app->request->get());
 
         //构建查询条件
-        $where['anchor_name'] = $args['anchor_name'];
-        $where['anchor_id'] = $args['anchor_id'];
+        $anchor_id = $args['anchor_id'];
+        isset($args['anchor_name']) && $data['anchor_name'] = $args['anchor_name'];
         isset($args['thumb']) && $data['thumb'] = $args['thumb'];
         isset($args['backimage']) && $data['backimage'] = $args['backimage'];
         isset($args['qrcode']) && $data['qrcode'] = $args['qrcode'];
         isset($args['platform']) && $data['platform'] = $args['platform'];
         isset($args['broadcast']) && $data['broadcast'] = $args['broadcast'];
         isset($args['description']) && $data['description'] = $args['description'];
-        $data['modify_time'] = time();
         $this->anchorService = new AnchorService();
-        $result = $this->anchorService->updateAnchor($data,$where);
+        $result = $this->anchorService->updateAnchor($anchor_id,$data);
         if($result['status']==false){
             $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
         }

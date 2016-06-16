@@ -69,20 +69,54 @@ class AnchorService extends BaseService
     /**
      * 修改主播资料
      */
-    public function updateAnchor($data,$where){
-
+    public function updateAnchor($anchor_id,$data){
+        $anchorData = $fansData = array();
         $this->anchor = new Anchor();
-        $this->anchor->attributes = $data;
-        if(!$this->anchor->validate()) {
-            return $this->export(false,'属性验证失败',$this->anchor->errors);
+        $this->fans = new Fans();
+        //验证粉丝
+        $this->fans = Fans::findOne(['anchor_id'=>$anchor_id]);
+        if(!$this->fans){
+            return $this->export(false,'粉丝已关联主播或粉丝信息不存在');
         }
-        $data = (object)$data;
-        $data->create_time = time();
-        $result = $this->anchor->getRow('*',$where);
-        if(!$result) return $this->export(false,'该主播不存在',$result);
-        $result = $this->anchor->updateData($data,$where);
+        //验证主播
+        $this->anchor = Anchor::findOne(['anchor_id'=>$anchor_id]);
+        if(!$this->anchor){
+            return $this->export(false,'该主播不存在');
+        }
+        isset($data['anchor_name']) && $fansData['wx_name'] = $data['anchor_name'];
+        isset($data['thumb']) && $fansData['wx_thumb'] = $data['thumb'];
+        isset($data['backimage']) && $anchorData['backimage'] = $data['backimage'];
+        isset($data['qrcode']) && $anchorData['qrcode'] = $data['qrcode'];
+        isset($data['platform']) && $anchorData['platform'] = $data['platform'];
+        isset($data['broadcast']) && $anchorData['broadcast'] = $data['broadcast'];
+        isset($data['description']) && $anchorData['description'] = $data['description'];
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        try {
+            //更新主播表
+            $anchorData['modify_time'] = time();
+            foreach ($anchorData as $key => $value){
+                $this->anchor->$key = $value;
+            }
+            $result = $this->anchor->save();
+            if(!$result){
+                return $this->export(false,'更新失败',$result);
+            }
+            //更新粉丝表
+            foreach ($fansData as $key => $value){
+                $this->fans->$key = $value;
+            }
+            $result = $this->fans->save();
+            if(!$result){
+                return $this->export(false,'更新失败',$result);
+            }
+            $transaction->commit();
+        } catch(Exception $e) {
+            $transaction->rollBack();
+            $result = false;
+        }
         if(!$result){
-            return $this->export(false,'无变化',$result);
+            return $this->export(false,'操作失败',$result);
         }
         return $this->export(true,'成功',$result);
     }
