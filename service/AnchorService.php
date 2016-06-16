@@ -26,21 +26,42 @@ class AnchorService extends BaseService
     /**
      * 添加主播
      */
-    public function addAnchor($data){
+    public function addAnchor($data,$fans_id){
 
         $this->anchor = new Anchor();
+        $this->fans = new Fans();
+        $where['fans_id'] = $fans_id;
+        $fans = Fans::findOne(['fans_id'=>$fans_id,'anchor_id'=>0]);
+        if(!$fans){
+            return $this->export(false,'粉丝已关联主播或粉丝信息不存在');
+        }
         $this->anchor->attributes = $data;
         if(!$this->anchor->validate()) {
             return $this->export(false,'属性验证失败',$this->anchor->errors);
         }
-        $data = (object)$data;
-        $data->create_time = time();
-        $where['anchor_name'] = $data->anchor_name;
-        $result = $this->anchor->getRow('*',$where);
-        if($result) return $this->export(false,'主播昵称已被注册',$result);
-        $result = $this->anchor->insertData($data);
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        try {
+
+            $data['create_time'] = time();
+            foreach ($data as $key => $value){
+                $this->anchor->$key = $value;
+            }
+            $result = $this->anchor->save();
+            if(!$result){
+                return $this->export(false,'插入失败',$result);
+            }
+            $anchor_id = $this->anchor->attributes['anchor_id'];
+            $fans->anchor_id = $anchor_id;
+            $result = $fans->save();
+
+            $transaction->commit();
+        } catch(Exception $e) {
+            $transaction->rollBack();
+            $result = false;
+        }
         if(!$result){
-            return $this->export(false,'插入失败',$result);
+            return $this->export(false,'操作失败',$result);
         }
         return $this->export(true,'成功',$result);
     }

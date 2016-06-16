@@ -30,26 +30,26 @@ class AnchorController extends BaseController
 
         $this->checkMethod('get');
         $rule = [
-            'anchor_name' => ['type' => 'string', 'required' => TRUE],
-            'thumb' => ['type' => 'string', 'required' => FALSE],
+            'fans_id' => ['type' => 'int', 'required' => TRUE],
             'backimage' => ['type' => 'string', 'required' => FALSE],
             'qrcode' => ['type' => 'string', 'required' => FALSE],
             'platform' => ['type' => 'string', 'required' => FALSE],
             'broadcast' => ['type' => 'string', 'required' => FALSE],
+            'description' => ['type' => 'string', 'required' => FALSE],
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->get());
 
         //构建查询条件
-        $data['anchor_name'] = $args['anchor_name'];
-        isset($args['thumb']) && $data['thumb'] = $args['thumb'];
         isset($args['backimage']) && $data['backimage'] = $args['backimage'];
         isset($args['qrcode']) && $data['qrcode'] = $args['qrcode'];
         isset($args['platform']) && $data['platform'] = $args['platform'];
         isset($args['broadcast']) && $data['broadcast'] = $args['broadcast'];
+        isset($args['description']) && $data['description'] = $args['description'];
         $data['create_time'] = time();
         $data['modify_time'] = time();
+        $fans_id = $args['fans_id'];
         $this->anchorService = new AnchorService();
-        $result = $this->anchorService->addAnchor($data);
+        $result = $this->anchorService->addAnchor($data,$fans_id);
         if($result['status']==false){
             $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
         }

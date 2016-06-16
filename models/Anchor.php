@@ -36,8 +36,9 @@ class Anchor extends BaseModel
     {
         return [
             [['create_time', 'modify_time', 'last_time'], 'integer'],
-            [['anchor_name'], 'string', 'max' => 16],
-            [['thumb', 'backimage', 'qrcode', 'broadcast'], 'string', 'max' => 128],
+//            [['anchor_name'], 'string', 'max' => 16],
+//            [['thumb', 'backimage', 'qrcode', 'broadcast'], 'string', 'max' => 128],
+            [['backimage', 'qrcode', 'broadcast'], 'string', 'max' => 128],
             [['platform'], 'string', 'max' => 8],
             [['description'], 'string', 'max' => 512],
         ];
@@ -50,8 +51,8 @@ class Anchor extends BaseModel
     {
         return [
             'anchor_id' => 'Anchor ID',
-            'anchor_name' => 'Anchor Name',
-            'thumb' => 'Thumb',
+//            'anchor_name' => 'Anchor Name',
+//            'thumb' => 'Thumb',
             'backimage' => 'Backimage',
             'qrcode' => 'Qrcode',
             'platform' => 'Platform',
