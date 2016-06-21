@@ -82,8 +82,8 @@ class BallotPrizeService extends BaseService {
                 $arr['thumb'] = $fans->wx_thumb;
                 $arr['name'] = $fans->wx_name;
                 $arr['platform'] = $anchor->platform;
-                $result[] = $arr;
             }
+            $result[] = $arr;
         }
         return $this->export(TRUE, '活动奖项获取成功', $result);
     }
