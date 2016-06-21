@@ -12,6 +12,8 @@ use Yii;
 use app\components\ApiCode;
 use app\service\BallotService;
 use app\controllers\BaseController;
+use app\service\CurdService;
+use app\service\AnchorService;
 
 class BallotController extends BaseController
 {
@@ -309,5 +311,58 @@ class BallotController extends BaseController
         }
         $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
 
+    }
+    /**
+     * info
+     * 获取指定活动的基本信息
+     */
+    public function actionInfo() {
+        $this->checkMethod('get');
+        $rule = [
+            'ballot_id' => ['type' => 'int', 'required' => TRUE]
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        $curd = new CurdService();
+        $res = $curd->fetchOne("app\models\Ballot", $args);
+        if($res['status']) {
+            $this->renderJson(ApiCode::SUCCESS, $res['message'], $res['data']);
+        } else {
+            $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message']);
+        }
+    }
+    /**
+     * anchor-in-ballot
+     * 获取活动中主播信息
+     * @param number $ballot_id     活动ID
+     * @param number $anchor_id     主播ID
+     */
+    public function actionAnchorInBallot() {
+        $this->checkMethod('get');
+        $rule = [
+            'ballot_id' => ['type' => 'int', 'required' => TRUE],
+            'anchor_id' => ['type' => 'int', 'required' => TRUE]
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        
+        $curd = new CurdService();
+        
+        // 获取活动中该主播的得票数
+        $res = $curd->fetchOne("app\models\BallotEAnchor", $args);
+        if(empty($res['data'])) {
+            $this->renderJson(ApiCode::ERROR_API_FAILED, '该主播并未参加本次活动');
+        }
+        $vote = $res['data']->votes;
+        // 获取主播的基本信息
+        $res = $curd->fetchOne("app\models\Anchor", ['anchor_id'=>$args['anchor_id']]);
+        if(empty($res['data'])) {
+            $this->renderJson(ApiCode::ERROR_API_FAILED, '未获取到主播信息');
+        }
+        $anchor = $res['data'];
+        $fans = $anchor->fans;
+        $result = $anchor->attributes;
+        $result['thumb'] = $fans->wx_thumb;
+        $result['name'] = $fans->wx_name;
+        $result['vote'] = $vote;
+        $this->renderJson(ApiCode::SUCCESS, '主播信息获取成功', $result);
     }
 }

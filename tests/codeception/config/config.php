@@ -14,7 +14,7 @@ return [
     ],
     'components' => [
         'db' => [
-            'dsn' => 'mysql:host=115.28.215.127;dbname=trxiu',
+            'dsn' => 'mysql:host=112.126.67.205;dbname=trxiu_dev',
         ],
         'mailer' => [
             'useFileTransport' => true,

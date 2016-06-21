@@ -8,6 +8,9 @@ use Yii;
 use app\service\BaseService;
 use app\service\CurdService;
 use app\models\BallotPrize;
+use app\models\BallotEAnchor;
+use app\models\Fans;
+use app\models\Anchor;
 
 class BallotPrizeService extends BaseService {
     /**
@@ -50,16 +53,39 @@ class BallotPrizeService extends BaseService {
     }
     /**
      * search
-     * 查询管理员列表
-     * @param string|array $where      查询条件
+     * 查询活动奖项设置
+     * @param number $ballotId         活动ID
      * @param string $args['order']    结果排序条件
      * @param number $args['page']     查询页码
      * @param number $args['pagesize'] 每页记录条数
      * @return array
      */
-    public function search($where, $args = []) {
-        $modelName = "app\models\BallotPrize";
+    public function search($ballotId, $args = []) {
         $service = new CurdService();
-        return $service->fetchAll($modelName, $where, $args);
+        $res = $service->fetchAll("app\models\BallotPrize", ['ballot_id'=>$ballotId], $args);
+        if(!$res['status']) {
+            return $res;
+        }
+        $prizes = $res['data']['data'];
+        // 如果已经颁奖则获取获奖主播信息
+        $result = [];
+        foreach($prizes as $item) {
+            $arr = $item->attributes;
+            if($item->anchor_id > 0) {
+                // 获取本活动中本主播获取的票数
+                $vote = BallotEAnchor::find()->where(['ballot_id'=>$ballotId, 'anchor_id'=>$item->anchor_id])->one();
+                $arr['vote'] = !empty($vote) ? $vote->votes : 0;
+                
+                // 获取主播基本信息
+                $anchor = Anchor::findOne(['anchor_id'=>$item->anchor_id]);
+                $fans = $anchor->fans;
+                $arr['thumb'] = $fans->wx_thumb;
+                $arr['name'] = $fans->wx_name;
+                $arr['platform'] = $anchor->platform;
+                $result[] = $arr;
+            }
+        }
+        return $this->export(TRUE, '活动奖项获取成功', $result);
     }
+    
 }

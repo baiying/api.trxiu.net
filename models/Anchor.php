@@ -63,4 +63,15 @@ class Anchor extends BaseModel
             'last_time' => 'Last Time',
         ];
     }
+    /**
+     * 获取主播关联的普通用户信息
+     * @return ActiveQuery
+     */
+    public function getFans() {
+        $res = $this->hasOne(Fans::className(), ['anchor_id' => 'anchor_id']);
+        if(!empty($res)) {
+            return $res;
+        }
+        return [];
+    }
 }

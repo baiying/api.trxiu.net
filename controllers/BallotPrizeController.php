@@ -101,13 +101,11 @@ class BallotPrizeController extends BaseController {
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->get());
         $service = new BallotPrizeService();
-        $res = $service->search($args, ['order'=>'sort ASC']);
+        $res = $service->search($args['ballot_id'], ['order'=>'sort ASC']);
         if($res['status']) {
-            $this->renderJson(ApiCode::SUCCESS, $res['message'], $res['data']['data'], intval($res['data']['count']));
+            $this->renderJson(ApiCode::SUCCESS, $res['message'], $res['data']);
         } else {
             $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message'], $res['data']);
         }
     }
-    
-    
 }
