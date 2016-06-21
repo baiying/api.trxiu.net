@@ -29,8 +29,7 @@ class Setting extends \yii\db\ActiveRecord
     {
         return [
             [['fee'], 'number'],
-            [['rule_vote', 'rule_red'], 'required'],
-            [['rule_vote', 'rule_red'], 'string'],
+            [['rule_vote', 'rule_red'], 'safe'],
         ];
     }
 

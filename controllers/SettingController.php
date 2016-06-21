@@ -23,11 +23,11 @@ class SettingController extends BaseController {
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->post());
         $service = new SettingService();
-        $res = $service->update($data);
+        $res = $service->update($args);
         if($res['status']) {
-            $this->renderJson(ApiCode::SUCCESS, $res['message']);
+            $this->renderJson(ApiCode::SUCCESS, $res['message'], $res['data']);
         } else {
-            $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message']);
+            $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message'], $res['data']);
         }
     }
 }
