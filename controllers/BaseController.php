@@ -15,7 +15,7 @@ class BaseController extends Controller {
     public $enableCsrfValidation = false;
     
     public function init() {
-       if(!YII_DEBUG)
+        if(!YII_DEBUG)
             $this->checkHmac();
     }
     /**

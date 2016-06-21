@@ -62,9 +62,9 @@ class CurdService extends BaseService {
     public function deleteRecord($modelName, $filter = []) {
         $records = $modelName::deleteAll($filter);
         if($records) {
-            $this->export(TRUE, '记录删除成功', $records);
+            return $this->export(TRUE, '记录删除成功', $records);
         } else {
-            $this->export(TRUE, '没有需要删除的数据', $records);
+            return $this->export(TRUE, '没有需要删除的数据', $records);
         }
     }
     /**

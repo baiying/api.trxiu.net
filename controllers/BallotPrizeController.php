@@ -85,9 +85,9 @@ class BallotPrizeController extends BaseController {
         $service = new BallotPrizeService();
         $res = $service->delete($args['prize_id']);
         if($res['status']) {
-            $this->renderJson(ApiCode::SUCCESS, "活动奖项删除成功", $res['data']);
+            $this->renderJson(ApiCode::SUCCESS, "活动奖项删除成功");
         } else {
-            $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message'], $res['data']);
+            $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message']);
         }
     }
     /**
