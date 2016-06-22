@@ -188,6 +188,15 @@ class AnchorService extends BaseService
         }
         return $this->export(true,'成功',$result);
     }
+    /**
+     * 修改主播动态内容
+     * @param unknown $newId
+     * @param unknown $data
+     */
+    public function editAnchorNews($newsId, $data = []) {
+        $curd = new CurdService();
+        return $curd->updateRecord("app\models\AnchorNews", ['news_id'=>$newsId], $data);
+    }
 
     /**
      * 动态评论
@@ -288,6 +297,7 @@ class AnchorService extends BaseService
      * 获取主播资料页
      */
     public function getAnchorInformation($where){
+        /*
         $this->anchor = new Anchor();
         $this->fans = new Fans();
         $result = $this->anchor->getRow('*',$where);
@@ -297,6 +307,13 @@ class AnchorService extends BaseService
         $fans = $this->fans->getRow('*',$result['anchor_id']);
         $result['anchor_name'] = $fans['wx_name'];
         $result['thumb'] = $fans['wx_thumb'];
+        return $this->export(true,'成功',$result);
+        */
+        $anchor = Anchor::findOne($where);
+        $fans = $anchor->fans;
+        $result = $anchor->attributes;
+        $result['anchor_name'] = $fans->wx_name;
+        $result['thumb'] = $fans->wx_thumb;
         return $this->export(true,'成功',$result);
     }
 

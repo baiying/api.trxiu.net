@@ -29,19 +29,19 @@ class NewsController extends BaseController
 
         $result = $data = $where = array();
 
-        $this->checkMethod('get');
+        $this->checkMethod('post');
         $rule = [
             'anchor_id' => ['type' => 'int', 'required' => TRUE],
             'content' => ['type' => 'string', 'required' => TRUE],
             'images' => ['type' => 'string', 'required' => FALSE],
             'status' => ['type' => 'int', 'required' => FALSE, 'default' => 1],
         ];
-        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        $args = $this->getRequestData($rule, Yii::$app->request->post());
 
         //构建查询条件
         $data['anchor_id'] = $args['anchor_id'];
         $data['content'] = $args['content'];
-        isset($data['images']) && $data['images'] = $args['images'];
+        isset($args['images']) && $data['images'] = json_encode(explode(",", $args['images']));
         $data['status'] = $args['status'];
         $data['create_time'] = time();
         $this->anchorService = new AnchorService();
@@ -52,6 +52,30 @@ class NewsController extends BaseController
         $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
 
     }
+    /**
+     * 修改主播动态内容
+     */
+    public function actionEditAnchorNews() {
+        $this->checkMethod('post');
+        $rule = [
+            'news_id' => ['type' => 'int', 'required' => TRUE],
+            'content' => ['type' => 'string', 'required' => false],
+            'images' => ['type' => 'string', 'required' => FALSE],
+            'status' => ['type' => 'int', 'required' => FALSE],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->post());
+        
+        //构建查询条件
+        isset($args['content']) && $data['content'] = $args['content'];
+        isset($args['images']) && $data['images'] = json_encode(explode(",", $args['images']));
+        isset($args['status']) && $data['status'] = $args['status'];
+        $this->anchorService = new AnchorService();
+        $result = $this->anchorService->editAnchorNews($args['news_id'], $data);
+        if($result['status']==false){
+            $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
+        }
+        $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
+    }
 
     /**
      * 动态评论
@@ -60,7 +84,7 @@ class NewsController extends BaseController
 
         $result = $data = $where = array();
 
-        $this->checkMethod('get');
+        $this->checkMethod('post');
         $rule = [
             'news_id' => ['type' => 'int', 'required' => TRUE],
             'fans_id' => ['type' => 'int', 'required' => TRUE],
@@ -68,7 +92,7 @@ class NewsController extends BaseController
             'parent_comment_id' => ['type' => 'int', 'required' => FALSE],
             'status' => ['type' => 'int', 'required' => FALSE, 'default' => 1],
         ];
-        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        $args = $this->getRequestData($rule, Yii::$app->request->post());
 
         //构建查询条件
         $data['news_id'] = $args['news_id'];
@@ -115,7 +139,7 @@ class NewsController extends BaseController
         if($result['status']==false){
             $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
         }
-        $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
+        $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data'], $result['data']['total']);
 
     }
 

@@ -16,12 +16,10 @@ class SettingController extends BaseController {
     
     public function actionUpdate() {
         $this->checkMethod('post');
-        $rule = [
-            'fee' => ['type'=>'float', 'required'=>false],
-            'rule_vote' => ['type'=>'string', 'required'=>false],
-            'rule_red' => ['type'=>'string', 'required'=>false],
-        ];
-        $args = $this->getRequestData($rule, Yii::$app->request->post());
+        $args = [];
+        Yii::$app->request->post('fee') && $args['fee'] = floatval(Yii::$app->request->post('fee'));
+        Yii::$app->request->post('rule_vote') && $args['rule_vote'] = Yii::$app->request->post('rule_vote');
+        Yii::$app->request->post('rule_red') && $args['rule_red'] = Yii::$app->request->post('rule_red');
         $service = new SettingService();
         $res = $service->update($args);
         if($res['status']) {
