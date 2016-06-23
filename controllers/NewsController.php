@@ -56,6 +56,7 @@ class NewsController extends BaseController
      * 修改主播动态内容
      */
     public function actionEditAnchorNews() {
+        $data = $result = array();
         $this->checkMethod('post');
         $rule = [
             'news_id' => ['type' => 'int', 'required' => TRUE],

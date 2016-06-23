@@ -18,6 +18,7 @@ use Yii;
  * @property integer $create_time
  * @property integer $modify_time
  * @property integer $last_time
+ * @property integer $news_time
  */
 class Anchor extends BaseModel
 {
@@ -35,7 +36,7 @@ class Anchor extends BaseModel
     public function rules()
     {
         return [
-            [['create_time', 'modify_time', 'last_time'], 'integer'],
+            [['create_time', 'modify_time', 'last_time','news_time'], 'integer'],
 //            [['anchor_name'], 'string', 'max' => 16],
 //            [['thumb', 'backimage', 'qrcode', 'broadcast'], 'string', 'max' => 128],
             [['backimage', 'qrcode', 'broadcast'], 'string', 'max' => 128],

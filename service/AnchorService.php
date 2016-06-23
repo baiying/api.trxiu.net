@@ -173,6 +173,10 @@ class AnchorService extends BaseService
         $this->anchorNews = new AnchorNews();
         $anchorWhere['anchor_id'] = $data['anchor_id'];
         $anchor = $this->anchor->getRow('*',$anchorWhere);
+        $this->anchor = Anchor::findOne(['anchor_id'=>$data['anchor_id']]);
+        if(!$this->anchor){
+            return $this->export(false,'主播ID无效');
+        }
         if(!$anchor) {
             return $this->export(false,'主播ID无效',$anchor);
         }
@@ -180,11 +184,27 @@ class AnchorService extends BaseService
         if(!$this->anchorNews->validate()) {
             return $this->export(false,'属性验证失败',$this->anchorNews->errors);
         }
-        $data = (object)$data;
-        $data->create_time = time();
-        $result = $this->anchorNews->insertData($data);
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        try {
+            $data = (object)$data;
+            $data->create_time = time();
+            $result = $this->anchorNews->insertData($data);
+            if(!$result){
+                return $this->export(false,'发布动态失败',$result);
+            }
+            $this->anchor->news_time = time();
+            $result = $this->anchor->save();
+            if(!$result){
+                return $this->export(false,'更新主播动态失败',$result);
+            }
+            $transaction->commit();
+        } catch(Exception $e) {
+            $transaction->rollBack();
+            $result = false;
+        }
         if(!$result){
-            return $this->export(false,'发布动态失败',$result);
+            return $this->export(false,'操作失败',$result);
         }
         return $this->export(true,'成功',$result);
     }
