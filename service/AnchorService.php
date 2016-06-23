@@ -405,6 +405,19 @@ class AnchorService extends BaseService
             return $this->export(false,'获取用户信息失败',$fans);
         }
         $result['fansInformation'] = $fans;
+        if($result['parent_comment_id']){
+            $parent_comment_where['comment_id'] = $result['parent_comment_id'];
+            $parent_comment = $this->anchorComment->getRow('*',$parent_comment_where);
+            if(!$parent_comment){
+                return $this->export(false,'获取失败',$parent_comment);
+            }
+            $parent_fansWhere['fans_id'] = $parent_comment['fans_id'];
+            $parent_fans = $this->fans->getRow('*',$parent_fansWhere);
+            if(!$parent_fans){
+                return $this->export(false,'获取用户信息失败',$parent_fans);
+            }
+            $result['parent_fansInformation'] = $parent_fans;
+        }
         return $this->export(true,'成功',$result);
     }
 }
