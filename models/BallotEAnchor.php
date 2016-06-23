@@ -11,6 +11,7 @@ use Yii;
  * @property integer $ballot_id
  * @property integer $anchor_id
  * @property integer $votes
+ * @property integer $votes_amend
  */
 class BallotEAnchor extends BaseModel
 {
@@ -28,7 +29,7 @@ class BallotEAnchor extends BaseModel
     public function rules()
     {
         return [
-            [['ballot_id', 'anchor_id', 'votes'], 'integer'],
+            [['ballot_id', 'anchor_id', 'votes', 'votes_amend'], 'integer'],
         ];
     }
 
@@ -42,6 +43,7 @@ class BallotEAnchor extends BaseModel
             'ballot_id' => 'Ballot ID',
             'anchor_id' => 'Anchor ID',
             'votes' => 'Votes',
+            'votes_amend' => 'Votes Amend',
         ];
     }
 }

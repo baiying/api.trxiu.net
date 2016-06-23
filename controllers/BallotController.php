@@ -187,6 +187,31 @@ class BallotController extends BaseController
     }
 
     /**
+     * 修改主播票数修正值
+     */
+    public function actionUpVotesAmend(){
+
+        $result = $data = $where = array();
+
+        $this->checkMethod('get');
+        $rule = [
+            'ballot_anchor_id' => ['type' => 'int', 'required' => TRUE],
+            'amend_num' => ['type' => 'int', 'required' => TRUE],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+
+        $ballot_anchor_id = $args['ballot_anchor_id'];
+        $amend_num = $args['amend_num'];
+        $this->ballotService = new BallotService();
+        $result = $this->ballotService->upVotesAmend($ballot_anchor_id,$amend_num);
+        if($result['status']==false){
+            $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
+        }
+        $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
+
+    }
+
+    /**
      * 主播退赛
      */
     public function actionBallotDelAnchor(){

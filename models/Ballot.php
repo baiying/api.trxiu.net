@@ -12,6 +12,7 @@ use Yii;
  * @property string $description
  * @property integer $anchor_count
  * @property integer $votes
+ * @property integer $votes_amend
  * @property integer $create_time
  * @property integer $begin_time
  * @property integer $end_time
@@ -34,7 +35,7 @@ class Ballot extends BaseModel
     {
         return [
             [['description'], 'string'],
-            [['anchor_count', 'votes', 'create_time', 'begin_time', 'end_time', 'status'], 'integer'],
+            [['anchor_count', 'votes', 'votes_amend', 'create_time', 'begin_time', 'end_time', 'status'], 'integer'],
             [['ballot_name'], 'string', 'max' => 32],
         ];
     }

@@ -73,7 +73,6 @@ class BallotService extends BaseService
             return $this->export(false,'数据无变化',$result);
         }
         return $this->export(true,'成功',$result);
-
     }
 
     /**
@@ -107,10 +106,12 @@ class BallotService extends BaseService
 
         // 所有的查询都在主服务器上执行
         $result = $this->ballot->getRow('*',$where);
+        $result['votes_total'] = $result['votes'] + $result['votes_amend'];
         $result['anchorList'] = $this->ballotEAnchor->getList('*',$where);
 
-        foreach ($result['anchorList'] as $item){
+        foreach ($result['anchorList'] as $key => $item){
             $anchorIdList[] = $item['anchor_id'];
+            $result['anchorList'][$key]['votes_total'] = $result['anchorList'][$key]['votes'] + $result['anchorList'][$key]['votes_amend'];
         }
         if(isset($anchorIdList)){
             $anchorInformationList = $this->anchor->getList();
@@ -181,6 +182,46 @@ class BallotService extends BaseService
         }
         return $this->export(true,'成功',$result);
 
+    }
+
+    /**
+     * 修改主播票数修正值
+     */
+    public function upVotesAmend($ballot_anchor_id ,$amendNum){
+        $this->ballotEAnchor = new BallotEAnchor();
+        $this->ballot = new Ballot();
+        //验证主播
+        $this->ballotEAnchor = BallotEAnchor::findOne(['ballot_anchor_id'=>$ballot_anchor_id]);
+        if(!$this->ballotEAnchor){
+            return $this->export(false,'ID不存在');
+        }
+        $ballot_id = $this->ballotEAnchor->ballot_id;
+        $this->ballot = Ballot::findOne(['ballot_id'=>$ballot_id]);
+        if(!$this->ballot){
+            return $this->export(false,'活动不存在');
+        }
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        try {
+            $this->ballot->votes_amend += $amendNum;
+            $result = $this->ballot->save();
+            if(!$result){
+                return $this->export(false,'更新失败,活动票数修正未成功',$result);
+            }
+            $this->ballotEAnchor->votes_amend += $amendNum;
+            $this->ballotEAnchor->save();
+            if(!$result){
+                return $this->export(false,'更新失败,主播票数修正未成功',$result);
+            }
+            $transaction->commit();
+        } catch(Exception $e) {
+            $transaction->rollBack();
+            $result = false;
+        }
+        if(!$result){
+            return $this->export(false,'操作失败',$result);
+        }
+        return $this->export(true,'成功',$result);
     }
 
     /**
