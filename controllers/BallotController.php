@@ -350,6 +350,8 @@ class BallotController extends BaseController
         $curd = new CurdService();
         $res = $curd->fetchOne("app\models\Ballot", $args);
         if($res['status']) {
+            $res['data']['votes'] += $res['data']['votes_amend'];
+            unset($res['data']['votes_amend']);
             $this->renderJson(ApiCode::SUCCESS, $res['message'], $res['data']);
         } else {
             $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message']);
@@ -376,7 +378,7 @@ class BallotController extends BaseController
         if(empty($res['data'])) {
             $this->renderJson(ApiCode::ERROR_API_FAILED, '该主播并未参加本次活动');
         }
-        $vote = $res['data']->votes;
+        $vote = $res['data']->votes + $res['data']->votes_amend;
         // 获取主播的基本信息
         $res = $curd->fetchOne("app\models\Anchor", ['anchor_id'=>$args['anchor_id']]);
         if(empty($res['data'])) {
