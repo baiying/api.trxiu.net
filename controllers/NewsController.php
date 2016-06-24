@@ -56,6 +56,7 @@ class NewsController extends BaseController
      * 修改主播动态内容
      */
     public function actionEditAnchorNews() {
+        $data = $result = array();
         $this->checkMethod('post');
         $rule = [
             'news_id' => ['type' => 'int', 'required' => TRUE],
@@ -198,5 +199,54 @@ class NewsController extends BaseController
         $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
     }
 
+    /**
+     * 删除动态评论
+     */
+    public function actionDelNews(){
+
+        $result = $data = $where = $ext = array();
+
+        $this->checkMethod('get');
+        $rule = [
+            'news_id' => ['type' => 'int', 'required' => TRUE],
+            'anchor_id' => ['type' => 'int', 'required' => TRUE],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+
+        //构建查询条件
+        $news_id = $args['news_id'];
+        $anchor_id = $args['anchor_id'];
+        $this->anchorService = new AnchorService();
+        $result = $this->anchorService->delNews($news_id,$anchor_id);
+        if($result['status']==false){
+            $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
+        }
+        $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
+    }
+
+    /**
+     * 删除评论
+     */
+    public function actionDelNewsComment(){
+
+        $result = $data = $where = $ext = array();
+
+        $this->checkMethod('get');
+        $rule = [
+            'comment_id' => ['type' => 'int', 'required' => TRUE],
+            'fans_id' => ['type' => 'int', 'required' => TRUE],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+
+        //构建查询条件
+        $comment_id = $args['comment_id'];
+        $fans_id = $args['fans_id'];
+        $this->anchorService = new AnchorService();
+        $result = $this->anchorService->delNewsComment($comment_id,$fans_id);
+        if($result['status']==false){
+            $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
+        }
+        $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
+    }
 
 }

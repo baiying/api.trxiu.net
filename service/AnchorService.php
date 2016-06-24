@@ -173,6 +173,10 @@ class AnchorService extends BaseService
         $this->anchorNews = new AnchorNews();
         $anchorWhere['anchor_id'] = $data['anchor_id'];
         $anchor = $this->anchor->getRow('*',$anchorWhere);
+        $this->anchor = Anchor::findOne(['anchor_id'=>$data['anchor_id']]);
+        if(!$this->anchor){
+            return $this->export(false,'主播ID无效');
+        }
         if(!$anchor) {
             return $this->export(false,'主播ID无效',$anchor);
         }
@@ -180,11 +184,27 @@ class AnchorService extends BaseService
         if(!$this->anchorNews->validate()) {
             return $this->export(false,'属性验证失败',$this->anchorNews->errors);
         }
-        $data = (object)$data;
-        $data->create_time = time();
-        $result = $this->anchorNews->insertData($data);
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        try {
+            $data = (object)$data;
+            $data->create_time = time();
+            $result = $this->anchorNews->insertData($data);
+            if(!$result){
+                return $this->export(false,'发布动态失败',$result);
+            }
+            $this->anchor->news_time = time();
+            $result = $this->anchor->save();
+            if(!$result){
+                return $this->export(false,'更新主播动态失败',$result);
+            }
+            $transaction->commit();
+        } catch(Exception $e) {
+            $transaction->rollBack();
+            $result = false;
+        }
         if(!$result){
-            return $this->export(false,'发布动态失败',$result);
+            return $this->export(false,'操作失败',$result);
         }
         return $this->export(true,'成功',$result);
     }
@@ -212,6 +232,7 @@ class AnchorService extends BaseService
         if(!$fans) {
             return $this->export(false,'用户不存在',$fans);
         }
+        $newsWhere['status'] = 1;
         $newsWhere['news_id'] = $data['news_id'];
         $news = $this->anchorNews->getRow('*',$newsWhere);
         if(!$news) {
@@ -278,6 +299,7 @@ class AnchorService extends BaseService
             //计算limit数据
             $newsExt['limit']['size'] = 3;
             $newsExt['limit']['start'] = 0;
+            $newsWhere['status'] = 1;
             $news = $this->anchorNews->getListAndLimit('*',$newsWhere,$newsExt);
             $anchorNews[$anchor_id] = $news['list'];
         }
@@ -323,6 +345,7 @@ class AnchorService extends BaseService
     public function getAnchorNews($where,$ext){
         $this->anchorNews = new AnchorNews();
         $this->fans = new Fans();
+        $where['status'] = 1;
         $result = $this->anchorNews->getListAndLimit('*',$where,$ext);
         if(!$result){
             return $this->export(false,'获取失败',$result);
@@ -353,6 +376,7 @@ class AnchorService extends BaseService
     public function getNewsCommentList($where,$ext){
         $this->anchorComment = new AnchorComment();
         $this->fans = new Fans();
+        $where['status'] = 1;
         $result = $this->anchorComment->getListAndLimit('*',$where,$ext);
         if(!$result){
             return $this->export(false,'获取失败',$result);
@@ -385,6 +409,83 @@ class AnchorService extends BaseService
             return $this->export(false,'获取用户信息失败',$fans);
         }
         $result['fansInformation'] = $fans;
+        if($result['parent_comment_id']){
+            $parent_comment_where['comment_id'] = $result['parent_comment_id'];
+            $parent_comment = $this->anchorComment->getRow('*',$parent_comment_where);
+            if(!$parent_comment){
+                return $this->export(false,'获取失败',$parent_comment);
+            }
+            $parent_fansWhere['fans_id'] = $parent_comment['fans_id'];
+            $parent_fans = $this->fans->getRow('*',$parent_fansWhere);
+            if(!$parent_fans){
+                return $this->export(false,'获取用户信息失败',$parent_fans);
+            }
+            $result['parent_fansInformation'] = $parent_fans;
+        }
         return $this->export(true,'成功',$result);
+    }
+
+    /**
+     * 删除主播动态
+     */
+    public function delNews($news_id,$identity){
+        $commentNum = 0;
+        $this->anchorNews = new AnchorNews();
+        $this->anchorComment = new AnchorComment();
+        $news = $this->anchorNews->getRow('*',['news_id'=>$news_id,'status'=>1,'anchor_id'=>$identity]);
+        if(!$news){
+            return $this->export(false,'您没有权限操作该动态',$news);
+        }
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        try {
+            $result = $this->anchorNews->updateData(['status'=>2],['news_id'=>$news_id,'status'=>1]);
+            if(!$result) return $this->export(false,'删除失败',$result);
+            $commentNum = $this->anchorComment->updateData(['status'=>2],['news_id'=>$news_id,'status'=>1]);
+            // ... 执行其他 SQL 语句 ...
+            $transaction->commit();
+        } catch(\Exception $e) {
+            $transaction->rollBack();
+            $result = false;
+        }
+        if(!$result){
+            return $this->export(false,'操作失败',$news);
+        }
+        return $this->export(true,'操作成功，您已删除动态并删除了'.$commentNum.'条评论',$result);
+    }
+
+
+    /**
+     * 删除动态评论
+     */
+    public function delNewsComment($comment_id,$identity){
+        $parentCommentNum = 0;
+        $this->anchorNews = new AnchorNews();
+        $this->anchorComment = new AnchorComment();
+        $comment = $this->anchorComment->getRow('*',['comment_id'=>$comment_id,'status'=>1,'fans_id'=>$identity]);
+        if(!$comment){
+            return $this->export(false,'您没有权限进行该操作',$comment);
+        }
+        $news_id = $comment['news_id'];
+        $this->anchorNews = AnchorNews::findOne(['news_id'=>$news_id]);
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        try {
+            $result = $this->anchorComment->updateData(['status'=>2],['comment_id'=>$comment_id,'status'=>1]);
+            if(!$result) return $this->export(false,'删除失败',$result);
+            if($this->anchorNews->comments > 0){
+                $this->anchorNews->comments -= $result;
+                $this->anchorNews->save();
+            }
+            // ... 执行其他 SQL 语句 ...
+            $transaction->commit();
+        } catch(\Exception $e) {
+            $transaction->rollBack();
+            $result = false;
+        }
+        if(!$result){
+            return $this->export(false,'操作失败',$comment);
+        }
+        return $this->export(true,'操作成功',$result);
     }
 }
