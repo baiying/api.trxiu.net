@@ -35,10 +35,10 @@ class Canvass extends BaseModel
     public function rules()
     {
         return [
-            [['canvass_id'], 'required'],
+            [['canvass_id', 'ballot_id', 'anchor_id', 'fans_id', 'charge'], 'required', 'on'=>'create'],
             [['ballot_id', 'anchor_id', 'fans_id', 'status', 'create_time', 'active_time', 'end_time'], 'integer'],
-            [['amount', 'refund'], 'number'],
-            [['canvass_id'], 'string', 'max' => 26],
+            [['amount', 'refund', 'charge', 'fee'], 'number'],
+            [['canvass_id'], 'string', 'max' => 20],
             [['url'], 'string', 'max' => 256],
         ];
     }
@@ -61,5 +61,22 @@ class Canvass extends BaseModel
             'end_time' => 'End Time',
             'refund' => 'Refund',
         ];
+    }
+    /**
+     * 获取拉票全部红包信息
+     * @return ActiveQuery|multitype:
+     */
+    public function getReds() {
+        $res = $this->hasOne(CanvassRed::className(), ['canvass_id' => 'canvass_id']);
+        if(!empty($res)) {
+            return $res;
+        }
+        return [];
+    }
+    /**
+     * 获取未被领取的红包
+     */
+    public function getUnreceiveReds() {
+        return CanvassRed::find()->where(['canvass_id'=>$this->canvass_id, 'fans_id'=>0])->all();
     }
 }
