@@ -133,7 +133,7 @@ class NewsController extends BaseController
         $ext['limit']['size'] = isset($args['size']) ? $args['size'] : 10;
         //计算limit数据
         $ext['limit']['start'] = ($ext['limit']['page'] - 1) * $ext['limit']['size'];
-        $ext['orderBy'] = ['create_time'=>'desc'];
+        $ext['orderBy'] = "create_time DESC";
         $this->anchorService = new AnchorService();
         $result = $this->anchorService->getAnchorNews($where,$ext);
         if($result['status']==false){
