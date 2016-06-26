@@ -79,4 +79,12 @@ class Canvass extends BaseModel
     public function getUnreceiveReds() {
         return CanvassRed::find()->where(['canvass_id'=>$this->canvass_id, 'fans_id'=>0])->all();
     }
+    /**
+     * 获取当前手气最佳红包记录
+     * 如果还没有手气最佳，则返回0
+     */
+    public function getBestAmount() {
+        $res = CanvassRed::find()->where(['canvass_id'=>$this->canvass_id, 'best'=>1])->one();
+        return empty($res) ? 0 : $res;
+    }
 }

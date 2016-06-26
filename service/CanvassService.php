@@ -9,6 +9,7 @@ use app\service\CurdService;
 use app\models\Canvass;
 use app\models\CanvassRed;
 use app\models\Ballot;
+use yii\db\Exception;
 
 class CanvassService extends BaseService {
     /**
@@ -44,23 +45,68 @@ class CanvassService extends BaseService {
         } 
         return $res;
     }
-    
+    /**
+     * receiveRedpackage
+     * 领取红包
+     * @param number $ballotId  活动ID
+     * @param string $canvassId 拉票ID
+     * @param number $fansId    领取红包的粉丝ID
+     */
     public function receiveRedpackage($ballotId, $canvassId, $fansId) {
         $canvass = Canvass::findOne(['ballot_id'=>$ballotId, 'canvass_id'=>$canvassId]);
         if(empty($canvass)) {
-            $this->export(FALSE, '未查询到指定的拉票活动');
+            return $this->export(FALSE, '未查询到指定的拉票活动');
         }
+        // 获取目前为止手气最佳红包金额
+        $best = $canvass->bestAmount;
         // 获取拉票活动中未被领取的红包
         $reds = $canvass->unreceiveReds;
         if(empty($reds)) {
-            $this->export(FALSE, '红包已被抢光');
+            return $this->export(FALSE, '红包已被抢光');
         }
-        // 随机抽取一个红包
-        $getRed = $reds[array_rand($reds)];
-        // 将粉丝ID更新到红包中，表示该红包已被领取
-        $getRed->fans_id = $fansId;
-        $getRed->save();
-        
+        $trans = Yii::$app->db->beginTransaction();
+        try {
+            // 随机抽取一个红包
+            $getRed = $reds[array_rand($reds)];
+            // 将粉丝ID更新到红包中，表示该红包已被领取
+            $getRed->fans_id = $fansId;
+            $getRed->receive_time = time();
+            // 判断是否为手气最佳
+            if($best == 0) {
+                $getRed->best = 1;
+                $getRed->save();
+            } else {
+                if(bccomp($getRed->amount, $best->amount, 2) == 1) {
+                    $getRed->best = 1;
+                    $getRed->save();
+                    $best->best = 0;
+                    $best->save();
+                } else {
+                    $getRed->save();
+                }
+            }
+            // 为主播投一票
+            $voteService = new VoteService();
+            $res = $voteService->addOne([
+                'ballot_id' => $ballotId,
+                'anchor_id' => $canvass->anchor_id,
+                'canvass_id'=> $canvassId,
+                'fans_id'   => $fansId,
+                'earn'      => $getRed->amount
+            ]);
+            if($res['status']) {
+                $trans->commit();
+                return $this->export(TRUE, '红包领取成功', ['amount'=>$getRed->amount]);
+                
+            } else {
+                $trans->rollBack();
+                return $this->export(FALSE, $res['message']);
+            }
+            
+        } catch(Exception $e) {
+            $trans->rollBack();
+            return $this->export(FALSE, $e->getMessage());
+        }
     }
     /**
      * 生成红包

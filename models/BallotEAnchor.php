@@ -29,7 +29,7 @@ class BallotEAnchor extends BaseModel
     public function rules()
     {
         return [
-            [['ballot_id', 'anchor_id', 'votes', 'votes_amend'], 'integer'],
+            [['ballot_id', 'anchor_id', 'votes', 'votes_amend', 'vote_free', 'vote_pay'], 'integer'],
         ];
     }
 

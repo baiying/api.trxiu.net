@@ -36,7 +36,13 @@ class CanvassController extends BaseController {
             $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message']);
         }
     }
-    
+    /**
+     * receive-redpackage
+     * 抽取红包
+     * @param number $ballot_id     活动Id
+     * @param string $canvass_id    拉票ID
+     * @param number $fans_id       抽取红包的粉丝ID
+     */
     public function actionReceiveRedpackage() {
         $this->checkMethod('get');
         $rule = [
@@ -48,5 +54,10 @@ class CanvassController extends BaseController {
         extract($args);
         $service = new CanvassService();
         $res = $service->receiveRedpackage($ballot_id, $canvass_id, $fans_id);
+        if($res['status']) {
+            $this->renderJson(ApiCode::SUCCESS, $res['message'], $res['data']);
+        } else {
+            $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message']);
+        }
     }
 }
