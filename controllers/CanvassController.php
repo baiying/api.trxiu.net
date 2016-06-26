@@ -37,6 +37,23 @@ class CanvassController extends BaseController {
         }
     }
     /**
+     * 获取拉票信息
+     */
+    public function actionInfo() {
+        $this->checkMethod('get');
+        $rule = [
+            'canvass_id' => ['type'=>'string', 'required'=>true],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        $service = new CanvassService();
+        $res = $service->info($args['canvass_id']);
+        if($res['status']) {
+            $this->renderJson(ApiCode::SUCCESS, $res['message'], $res['data']);
+        } else {
+            $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message']);
+        }
+    }
+    /**
      * receive-redpackage
      * 抽取红包
      * @param number $ballot_id     活动Id
@@ -44,13 +61,13 @@ class CanvassController extends BaseController {
      * @param number $fans_id       抽取红包的粉丝ID
      */
     public function actionReceiveRedpackage() {
-        $this->checkMethod('get');
+        $this->checkMethod('post');
         $rule = [
             'ballot_id'     => ['type'=>'int', 'required'=>true],
             'canvass_id'    => ['type'=>'string', 'required'=>true],
             'fans_id'       => ['type'=>'int', 'required'=>true],
         ];
-        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        $args = $this->getRequestData($rule, Yii::$app->request->post());
         extract($args);
         $service = new CanvassService();
         $res = $service->receiveRedpackage($ballot_id, $canvass_id, $fans_id);

@@ -109,6 +109,21 @@ class CanvassService extends BaseService {
         }
     }
     /**
+     * 获取拉票信息
+     * @param unknown $canvassId
+     * @return Ambigous <multitype:, multitype:unknown string >
+     */
+    public function info($canvassId) {
+        $canvass = Canvass::findOne(['canvass_id'=>$canvassId]);
+        $anchor = $canvass->anchor;
+        $fans = $canvass->fans;
+        $result = $canvass->attributes;
+        $result['anchor_name'] = $anchor->fans->wx_name;
+        $result['fans_name'] = $fans->wx_name;
+        $result['fans_thumb'] = $fans->wx_thumb;
+        return $this->export(TRUE, 'OK', $result);
+    }
+    /**
      * 生成红包
      * @param unknown $money
      * @return boolean

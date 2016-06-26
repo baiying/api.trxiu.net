@@ -87,4 +87,23 @@ class Canvass extends BaseModel
         $res = CanvassRed::find()->where(['canvass_id'=>$this->canvass_id, 'best'=>1])->one();
         return empty($res) ? 0 : $res;
     }
+    /**
+     * 获取拉票关联的活动信息
+     * @return Ambigous <\yii\db\static, NULL>
+     */
+    public function getBallot() {
+        return Ballot::findOne(['ballot_id'=>$this->ballot_id]);
+    }
+    /**
+     * 获取拉票主播信息
+     */
+    public function getAnchor() {
+        return Anchor::findOne(['anchor_id'=>$this->anchor_id]);
+    }
+    /**
+     * 获取发起拉票的粉丝ID
+     */
+    public function getFans() {
+        return Fans::findOne(['fans_id'=>$this->fans_id]);
+    }
 }
