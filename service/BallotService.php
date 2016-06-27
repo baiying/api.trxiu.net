@@ -526,13 +526,10 @@ class BallotService extends BaseService
     public function computeRedPacket($total,$num,$ranking){
         if($ranking < $num){
             $restrictArr = [
-                'default'=>[
-                    'min'=>0.01,'max'=>2.50,
-                ],'max'=>[
-                    'min'=>2.00,'max'=>2.50,
-                ],'min'=>[
-                    'min'=>0.01,'max'=>0.50,
-                ],[
+                'default'=>['min'=>0.01,'max'=>2.50,],
+                'max'=>['min'=>2.00,'max'=>2.50,],
+                'min'=>['min'=>0.01,'max'=>0.50,],
+                [
                     'min'=>1.20,'max'=>1.30,
                 ],[
                     'min'=>1.10,'max'=>1.40,

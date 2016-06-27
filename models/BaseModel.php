@@ -22,7 +22,6 @@ class BaseModel extends \yii\db\ActiveRecord
 
     public function getList($select = "*", $where = array(), $ext = array())
     {
-
         $query = new Query();
         $query = $query->from($this->tableName());
         $this->getWhere($where,$query);
@@ -39,14 +38,11 @@ class BaseModel extends \yii\db\ActiveRecord
             if (is_array($ext['limit'])) {
                 $query->limit($ext['limit']['size']);
                 $query->offset($ext['limit']['start']);
-//                echo json_encode($query);exit;
             } else {
                 $query->limit($ext['limit']);
             }
         }
         $result = $query->all();
-//        $commandQuery = clone $query;
-//        echo $commandQuery->createCommand()->getRawSql();exit;
         return $result;
     }
 

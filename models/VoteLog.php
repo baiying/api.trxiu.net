@@ -32,10 +32,10 @@ class VoteLog extends BaseModel
     public function rules()
     {
         return [
-            [['vote_id'], 'required'],
+            [['vote_id', 'ballot_id', 'anchor_id', 'fans_id'], 'required', 'on'=>'create'],
             [['ballot_id', 'anchor_id', 'fans_id', 'create_time', 'new_fans'], 'integer'],
             [['earn'], 'number'],
-            [['vote_id', 'canvass_id'], 'string', 'max' => 26],
+            [['vote_id', 'canvass_id'], 'string', 'max' => 20],
         ];
     }
 
