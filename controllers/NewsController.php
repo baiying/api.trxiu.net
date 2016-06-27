@@ -65,7 +65,7 @@ class NewsController extends BaseController
             'status' => ['type' => 'int', 'required' => FALSE],
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->post());
-        
+
         //构建查询条件
         isset($args['content']) && $data['content'] = $args['content'];
         isset($args['images']) && $data['images'] = json_encode(explode(",", $args['images']));
@@ -110,7 +110,7 @@ class NewsController extends BaseController
         $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
 
     }
-    
+
 
     /**
      * 获取主播动态页(每条动态获取前三条评论)
@@ -206,12 +206,12 @@ class NewsController extends BaseController
 
         $result = $data = $where = $ext = array();
 
-        $this->checkMethod('get');
+        $this->checkMethod('post');
         $rule = [
             'news_id' => ['type' => 'int', 'required' => TRUE],
             'anchor_id' => ['type' => 'int', 'required' => TRUE],
         ];
-        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        $args = $this->getRequestData($rule, Yii::$app->request->post());
 
         //构建查询条件
         $news_id = $args['news_id'];
@@ -231,12 +231,12 @@ class NewsController extends BaseController
 
         $result = $data = $where = $ext = array();
 
-        $this->checkMethod('get');
+        $this->checkMethod('post');
         $rule = [
             'comment_id' => ['type' => 'int', 'required' => TRUE],
             'fans_id' => ['type' => 'int', 'required' => TRUE],
         ];
-        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        $args = $this->getRequestData($rule, Yii::$app->request->post());
 
         //构建查询条件
         $comment_id = $args['comment_id'];

@@ -367,11 +367,16 @@ class BallotController extends BaseController
         $this->checkMethod('get');
         $rule = [
             'ballot_id' => ['type' => 'int', 'required' => TRUE],
-            'anchor_id' => ['type' => 'int', 'required' => TRUE]
+            'anchor_id' => ['type' => 'int', 'required' => TRUE],
+            'openid' => ['type' => 'string', 'required' => FALSE]
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->get());
         
         $curd = new CurdService();
+        if(isset($args['openid'])){
+            $userOpenid = $args['openid'];
+            unset($args['openid']);
+        }
         
         // 获取活动中该主播的得票数
         $res = $curd->fetchOne("app\models\BallotEAnchor", $args);
@@ -390,6 +395,8 @@ class BallotController extends BaseController
         $result['thumb'] = $fans->wx_thumb;
         $result['name'] = $fans->wx_name;
         $result['vote'] = $vote;
+        $openid = $fans->wx_openid;
+        $result['isAnchor'] = isset($userOpenid) ? (($userOpenid==$openid) ? true : false) : false;
         $this->renderJson(ApiCode::SUCCESS, '主播信息获取成功', $result);
     }
 }
