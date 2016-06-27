@@ -55,4 +55,11 @@ class VoteLog extends BaseModel
             'new_fans' => 'New Fans',
         ];
     }
+    /**
+     * 获取粉丝信息
+     * @return Ambigous <\yii\db\static, NULL>
+     */
+    public function getFans() {
+        return Fans::findOne(['fans_id'=>$this->fans_id]);
+    }
 }

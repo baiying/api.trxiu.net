@@ -124,6 +124,32 @@ class CanvassService extends BaseService {
         return $this->export(TRUE, 'OK', $result);
     }
     /**
+     * search
+     * 查询拉票数据
+     * @param number $data['ballot_id']     活动ID
+     * @param number $data['anchor_id']     主播ID
+     * @param string $data['canvass_id']    拉票ID
+     * @param number $data['fans_id']       发起拉票的粉丝ID
+     * @param string $data['order']         排序规则
+     * @param number $data['page']          页码
+     * @param number $data['pagesize']      页长
+     */
+    public function search($data = []) {
+        $args = [];
+        $where = "1 = 1";
+        isset($data['ballot_id'])  && $where .= " AND ballot_id = {$data['ballot_id']}";
+        isset($data['anchor_id'])  && $where .= " AND anchor_id = {$data['anchor_id']}";
+        isset($data['canvass_id']) && $where .= " AND canvass_id = '{$data['canvass_id']}'";
+        isset($data['fans_id'])  &&   $where .= " AND fans_id = {$data['fans_id']}";
+        
+        $args['order']      = isset($data['order']) ? str_replace("-", " ", $data['order']) : "vote_id DESC";
+        $args['page']       = isset($data['page']) ? $data['page'] : 1;
+        $args['pagesize']   = isset($data['pagesize']) ? $data['pagesize'] : 20;
+        
+        $curd = new CurdService();
+        return $curd->fetchAll("app\models\Canvass", $where, $args);
+    }
+    /**
      * 生成红包
      * @param unknown $money
      * @return boolean
@@ -156,4 +182,5 @@ class CanvassService extends BaseService {
         }
         return true;
     }
+    
 }

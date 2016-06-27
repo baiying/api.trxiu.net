@@ -64,4 +64,41 @@ class VoteService extends BaseService {
             return $this->export(FALSE, $e->getMessage());
         }
     }
+    /**
+     * search
+     * 查询投票明细
+     * @param number $data['ballot_id']         活动ID
+     * @param number $data['anchor_id']         主播ID
+     * @param number|string $data['fans_id']    粉丝ID
+     * @param string $data['canvass_id']        拉票ID
+     * @param string $data['order']             排序
+     * @param number $data['page']              页码
+     * @param number $data['pagesize']          页长
+     * @param string $type                      记录类型， free 表示免费投票，pay 表示拉票投票
+     */
+    public function search($data = [], $type = '') {
+        $args = [];
+        $where = "1 = 1";
+        isset($data['ballot_id']) && $where .= " AND ballot_id = {$data['ballot_id']}";
+        isset($data['anchor_id']) && $where .= " AND anchor_id = {$data['anchor_id']}";
+        isset($data['canvass_id']) && $where .= " AND canvass_id = '{$data['canvass_id']}'";
+        if(isset($data['fans_id'])) {
+            if(is_array($data['fans_id'])) {
+                $where .= " AND fans_id IN (".implode(",", $data['fans_id']).")";
+            } else {
+                $where .= " AND fans_id = {$data['fans_id']}";
+            }
+        }
+        if($type == 'free') {
+            $where .= " AND canvass_id = ''";
+        } elseif($type == "pay") {
+            $where .= " AND canvass_id != ''";
+        }
+        $args['order'] = isset($data['order']) ? str_replace("-", " ", $data['order']) : "vote_id DESC";
+        $args['page'] = isset($data['page']) ? $data['page'] : 1;
+        $args['pagesize'] = isset($data['pagesize']) ? $data['pagesize'] : 20;
+        $curd = new CurdService();
+        return $curd->fetchAll("app\models\VoteLog", $where, $args);
+        
+    }
 }

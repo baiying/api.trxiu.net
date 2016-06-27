@@ -77,4 +77,34 @@ class CanvassController extends BaseController {
             $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message']);
         }
     }
+    
+    public function actionSearch() {
+        $this->checkMethod('get');
+        $result = [];
+        $rule = [
+            'ballot_id' => ['type'=>'int', 'required'=>TRUE],
+            'anchor_id' => ['type'=>'int', 'required'=>FALSE],
+            'fans_id'   => ['type'=>'int', 'required'=>FALSE],
+            'canvass_id'=> ['type'=>'string', 'required'=>FALSE],
+            'page'      => ['type'=>'int', 'required'=>FALSE, 'default'=>1],
+            'pagesize'  => ['type'=>'int', 'required'=>FALSE, 'default'=>20],
+            'order'     => ['type'=>'string', 'required'=>FALSE, 'default'=>'create_time DESC'],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        $service = new CanvassService();
+        $res = $service->search($args);
+        if($res['status']) {
+            // 补全拉票发起人信息
+            foreach($res['data']['data'] as $item) {
+                $arr = $item->attributes;
+                $fans = $item->fans;
+                $arr['name'] = $fans->wx_name;
+                $arr['thumb'] = $fans->wx_thumb;
+                $result[] = $arr;
+            }
+            $this->renderJson(ApiCode::SUCCESS, $res['message'], $result, $res['data']['count']);
+        } else {
+            $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message'], $res['data']);
+        }
+    }
 }
