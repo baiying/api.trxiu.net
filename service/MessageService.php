@@ -167,6 +167,16 @@ class MessageService extends BaseService
             }
         }
         $result = $this->message->attributes;
+        $send_fans = $this->fans->getRow('*',['fans_id'=>$this->message->send_fans_id]);
+        if(!$send_fans){
+            return $this->export(false,'读取用户消息时发生错误',$send_fans);
+        }
+        $receive_fans = $this->fans->getRow('*',['fans_id'=>$this->message->receive_fans_id]);
+        if(!$receive_fans){
+            return $this->export(false,'读取用户消息时发生错误',$receive_fans);
+        }
+        $result['send_fans'] = $send_fans;
+        $result['receive_fans'] = $receive_fans;
         return $this->export(true,'成功',$result);
     }
 
@@ -178,6 +188,20 @@ class MessageService extends BaseService
         $result = $this->message->getListAndLimit('*',$where,$ext);
         if(!$result){
             return $this->export(false,'获取失败');
+        }
+        $this->fans = new Fans();
+        foreach ($result['list'] as $key => $value){
+
+            $send_fans = $this->fans->getRow('*',['fans_id'=>$value['send_fans_id']]);
+            if(!$send_fans){
+                return $this->export(false,'读取用户消息时发生错误',$send_fans);
+            }
+            $receive_fans = $this->fans->getRow('*',['fans_id'=>$value['send_fans_id']]);
+            if(!$receive_fans){
+                return $this->export(false,'读取用户消息时发生错误',$receive_fans);
+            }
+            $result['list'][$key]['send_fans'] = $send_fans;
+            $result['list'][$key]['receive_fans'] = $receive_fans;
         }
         return $this->export(true,'成功',$result);
     }
