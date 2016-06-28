@@ -94,4 +94,17 @@ class WeixinController extends NoAuthBaseController {
         $userInfo = Yii::$app->weixin->getOauthUserinfo($args['access_token'], $args['openid']);
         $this->renderJson(ApiCode::SUCCESS, '用户信息获取成功', $userInfo);
     }
+    /**
+     * 获取微信jsapi签名
+     * @param string $url   请求页面的地址
+     */
+    public function actionJsSign() {
+        $this->checkMethod('get');
+        $rule = [
+            'url' => ['type'=>'string', 'required'=>true]
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        $res = Yii::$app->weixin->getJsSign($args['url']);
+        $this->renderJson(ApiCode::SUCCESS, "OK", $res);
+    }
 }
