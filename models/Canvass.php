@@ -10,6 +10,7 @@ use Yii;
  * @property string $canvass_id
  * @property integer $ballot_id
  * @property integer $anchor_id
+ * @property string $source_id
  * @property integer $fans_id
  * @property string $amount
  * @property string $url
@@ -38,7 +39,7 @@ class Canvass extends BaseModel
             [['canvass_id', 'ballot_id', 'anchor_id', 'fans_id', 'charge'], 'required', 'on'=>'create'],
             [['ballot_id', 'anchor_id', 'fans_id', 'status', 'create_time', 'active_time', 'end_time'], 'integer'],
             [['amount', 'refund', 'charge', 'fee'], 'number'],
-            [['canvass_id'], 'string', 'max' => 20],
+            [['canvass_id', 'source_id'], 'string', 'max' => 20],
             [['url'], 'string', 'max' => 256],
         ];
     }
@@ -105,5 +106,13 @@ class Canvass extends BaseModel
      */
     public function getFans() {
         return Fans::findOne(['fans_id'=>$this->fans_id]);
+    }
+    /**
+     * 获取来源拉票信息
+     * @return NULL|Ambigous <\yii\db\static, NULL>
+     */
+    public function getSource() {
+        if($this->source_id == "") return null;
+        return Canvass::findOne(['canvass_id'=>$this->source_id]);
     }
 }
