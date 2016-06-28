@@ -13,11 +13,45 @@ use app\components\ApiCode;
 use app\service\FansService;
 use app\controllers\BaseController;
 use app\service\CurdService;
+use app\service\AnchorService;
 
 class FansController extends BaseController
 {
 
     private $fansService;
+    private $anchorService;
+
+    /**
+     * 根据Openid获取用户信息
+     */
+    public function actionGetFansInfoByOpenid(){
+
+        $result = $data = $where = array();
+
+        $this->checkMethod('get');
+        $rule = [
+            'openid' => ['type' => 'string', 'required' => TRUE],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        $where['wx_openid'] = $args['openid'];
+        $this->fansService = new FansService();
+        $result = $this->fansService->getFans($where);
+        if($result['status']==false){
+            $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
+        }
+        $fans = $result['data'];
+        if($fans['anchor_id']!=0){
+            $this->anchorService = new AnchorService();
+            $anchorWhere['anchor_id'] = $fans['anchor_id'];
+            $result = $this->anchorService->getAnchorInformation($anchorWhere);
+            if($result['status']==false){
+                $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
+            }
+            $fans['anchor'] = $result['data'];
+        }
+        $this->renderJson(ApiCode::SUCCESS,$result['message'],$fans);
+
+    }
 
     /**
      * 添加粉丝
