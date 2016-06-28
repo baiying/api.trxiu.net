@@ -203,12 +203,12 @@ class BallotService extends BaseService
         $connection = Yii::$app->db;
         $transaction = $connection->beginTransaction();
         try {
-            $this->ballot->votes_amend += $amendNum;
+            $this->ballot->votes_amend = $amendNum;
             $result = $this->ballot->save();
             if(!$result){
                 return $this->export(false,'更新失败,活动票数修正未成功',$result);
             }
-            $this->ballotEAnchor->votes_amend += $amendNum;
+            $this->ballotEAnchor->votes_amend = $amendNum;
             $this->ballotEAnchor->save();
             if(!$result){
                 return $this->export(false,'更新失败,主播票数修正未成功',$result);
