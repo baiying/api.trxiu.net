@@ -177,6 +177,56 @@ class NewsController extends BaseController
     }
 
     /**
+     * 获取动态评论
+     */
+    public function actionGetNewsAndCommentList(){
+
+        $result = $data = $where = $ext = array();
+
+        $this->checkMethod('get');
+        $rule = [
+            'news_id' => ['type' => 'int', 'required' => TRUE],
+            'page' => ['type' => 'int', 'required' => FALSE],
+            'size' => ['type' => 'int', 'required' => FALSE,'default' => 99],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+
+        //构建查询条件
+        $where['news_id'] = $args['news_id'];
+        //构建查询条件
+        $ext['limit']['page'] = isset($args['page']) ? $args['page'] : 1;
+        $ext['limit']['size'] = isset($args['size']) ? $args['size'] : 99;
+        //计算limit数据
+        $ext['limit']['start'] = ($ext['limit']['page'] - 1) * $ext['limit']['size'];
+        $ext['orderBy'] = ['create_time'=>'desc'];
+        $this->anchorService = new AnchorService();
+        $result = $this->anchorService->getNews($where);
+        if($result['status']==false){
+            $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
+        }
+        $news = $result['data'];
+        $result = $this->anchorService->getNewsCommentList($where,$ext);
+        if($result['status']==false){
+            $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
+        }
+        $commentList = $result['data']['list'];
+        $commentTotal = $result['data']['total'];
+        $commentPageCount = $result['data']['pagecount'];
+        $anchorWhere['anchor_id'] = $news['anchor_id'];
+        $result = $this->anchorService->getAnchorInformation($anchorWhere);
+        if($result['status']==false){
+            $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
+        }
+        $anchor = $result['data'];
+        $news['anchor'] = $anchor;
+        $news['commentList'] = $commentList;
+        $news['commentTotal'] = $commentTotal;
+        $news['commentPageCount'] = $commentPageCount;
+        $this->renderJson(ApiCode::SUCCESS,$result['message'],$news);
+
+    }
+
+    /**
      * 获取当前评论信息
      */
     public function actionGetComment(){
