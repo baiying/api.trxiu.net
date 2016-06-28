@@ -28,13 +28,13 @@ class MessageController extends BaseController
      */
     public function actionAddMessage(){
         $this->messageService = new MessageService();
-        $this->checkMethod('get');
+        $this->checkMethod('post');
         $rule = [
             'send_fans_id' => ['type' => 'int', 'required' => TRUE],
             'content' => ['type' => 'string', 'required' => TRUE],
             'receive_fans_id' => ['type' => 'int', 'required' => TRUE],
         ];
-        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        $args = $this->getRequestData($rule, Yii::$app->request->post());
 
         $message = $args;
         $message['code'] = Yii::$app->utils->createID(Yii::$app->id);
@@ -50,12 +50,12 @@ class MessageController extends BaseController
      */
     public function actionAddMessageAtAll(){
         $this->messageService = new MessageService();
-        $this->checkMethod('get');
+        $this->checkMethod('post');
         $rule = [
             'send_fans_id' => ['type' => 'int', 'required' => TRUE],
             'content' => ['type' => 'string', 'required' => TRUE],
         ];
-        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        $args = $this->getRequestData($rule, Yii::$app->request->post());
 
         $message = $args;
         $message['code'] = Yii::$app->utils->createID(Yii::$app->id);
