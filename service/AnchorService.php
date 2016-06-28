@@ -352,7 +352,7 @@ class AnchorService extends BaseService
         }
         foreach ($result['list'] as $key => $value){
             $commentWhere['news_id'] = $value['news_id'];
-        //构建查询条件
+            //构建查询条件
             $commentExt['limit']['page'] = 1;
             $commentExt['limit']['size'] = 3;
             //计算limit数据
@@ -366,6 +366,19 @@ class AnchorService extends BaseService
                 $result['list'][$key]['comment'] = null;
                 $result['list'][$key]['comment_total'] = 0;
             }
+        }
+        return $this->export(true,'成功',$result);
+    }
+
+    /**
+     * 获取主播动态页
+     */
+    public function getNews($where){
+        $this->anchorNews = new AnchorNews();
+        $where['status'] = 1;
+        $result = $this->anchorNews->getRow('*',$where);
+        if(!$result){
+            return $this->export(false,'获取动态失败',$result);
         }
         return $this->export(true,'成功',$result);
     }
