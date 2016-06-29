@@ -124,4 +124,31 @@ class MessageController extends BaseController
         $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
 
     }
+
+    /**
+     * 获取全部消息列表 (后台应用)
+     */
+    public function actionGetAllMessageList(){
+
+        $this->checkMethod('get');
+        $rule = [
+            'page' => ['type' => 'int','required'=>false,'dafault'=>1],
+            'size' => ['type' => 'int','required'=>false,'dafault'=>10],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        $this->messageService = new MessageService();
+        $ext['limit']['page'] = isset($args['page']) ? $args['page'] : 1;
+        $ext['limit']['size'] = isset($args['size']) ? $args['size'] : 10;
+        //计算limit数据
+        $ext['limit']['start'] = ($ext['limit']['page'] - 1) * $ext['limit']['size'];
+        $ext['orderBy'] = "create_time DESC";
+        $ext['groupBy'] = 'code';
+        $result = $this->messageService->getMessageList(['send_fans_id'=>0], $ext);
+        if($result['status']==false){
+            $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
+        }
+        $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
+
+
+    }
 }

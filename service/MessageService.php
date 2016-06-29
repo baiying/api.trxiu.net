@@ -200,12 +200,22 @@ class MessageService extends BaseService
                     return $this->export(false,'读取用户消息时发生错误',$send_fans);
                 }
                 $result['list'][$key]['send_fans'] = $send_fans;
+            }else{
+                $result['list'][$key]['send_fans']['fans_id'] = 0;
+                $result['list'][$key]['send_fans']['wx_name'] = '系统消息';
+                $result['list'][$key]['send_fans']['wx_thumb'] = "http://wx.qlogo.cn/mmopen/oYwP0cFmRU0yeRFvMnAZkytQiczSB4lAkXcPdH1pam409VQmuovLd55pp5libkUoOBpXLBJojibnKd7TSst5hicDaw/0";
             }
-            $receive_fans = $this->fans->getRow('*',['fans_id'=>$value['receive_fans_id']]);
-            if(!$receive_fans){
-                return $this->export(false,'读取用户消息时发生错误',$receive_fans);
+            if($value['receive_fans_id']!=0){
+                $receive_fans = $this->fans->getRow('*',['fans_id'=>$value['receive_fans_id']]);
+                if(!$receive_fans){
+                    return $this->export(false,'读取用户消息时发生错误',$receive_fans);
+                }
+                $result['list'][$key]['receive_fans'] = $receive_fans;
+            }else{
+                $result['list'][$key]['receive_fans']['fans_id'] = 0;
+                $result['list'][$key]['receive_fans']['wx_name'] = '系统消息';
+                $result['list'][$key]['receive_fans']['wx_thumb'] = "http://wx.qlogo.cn/mmopen/oYwP0cFmRU0yeRFvMnAZkytQiczSB4lAkXcPdH1pam409VQmuovLd55pp5libkUoOBpXLBJojibnKd7TSst5hicDaw/0";
             }
-            $result['list'][$key]['receive_fans'] = $receive_fans;
         }
         return $this->export(true,'成功',$result);
     }
