@@ -39,12 +39,37 @@ class CanvassService extends BaseService {
         $data['create_time'] = time();
         $data['active_time'] = time();
         $data['end_time'] = $ballot->end_time;
-        $res = $curd->createRecord($modelName, $data);
-        if($res['status']) {
-            // 生成拉票红包
-            $this->createRedPackage($data['canvass_id'], $data['amount']);
-        } 
-        return $res;
+        
+        $trans = Yii::$app->db->beginTransaction();
+        try {
+            $res = $curd->createRecord($modelName, $data);
+            if($res['status']) {
+                // 生成拉票红包
+                $this->createRedPackage($data['canvass_id'], $data['amount']);
+                // 在投票日志表中添加一条记录
+                $voteService = new VoteService();
+                $resVote = $voteService->addOne([
+                    'ballot_id' => $data['ballot_id'],
+                    'anchor_id' => $data['anchor_id'],
+                    'fans_id'   => $data['fans_id'],
+                    'canvass_id'=> $data['canvass_id'],
+                    'earn'      => 0,
+                    'votes'     => $data['charge']
+                ]);
+                if($resVote['status']) {
+                    $trans->commit();
+                    return $this->export(true, '拉票申请成功', ['canvass_id'=>$data['canvass_id']]);
+                } else {
+                    $trans->rollBack();
+                    return $this->export(false, $res['message']);
+                }
+            } 
+            return $res;
+            
+        } catch(Exception $e) {
+            $trans->rollBack();
+            return $this->export(false, $e->getMessage());            
+        }
     }
     /**
      * receiveRedpackage
@@ -93,7 +118,8 @@ class CanvassService extends BaseService {
                 'anchor_id' => $canvass->anchor_id,
                 'canvass_id'=> $canvassId,
                 'fans_id'   => $fansId,
-                'earn'      => $getRed->amount
+                'earn'      => $getRed->amount, 
+                'votes'     => 1
             ]);
             if($res['status']) {
                 $trans->commit();
