@@ -23,4 +23,29 @@ class PayService extends BaseService {
         $data['expire'] = date("YmdHis", time() + $data['expire']);
         return Yii::$app->wxpay->createOrder($data);
     }
+    /**
+     * wxQueryResult
+     * 查询微信支付是否成功
+     * 以下两个查询参数提供任一即可
+     * @param string $args['transaction_id']        微信订单号
+     * @param string $args['out_trade_no']          商户订单号
+     * @return boolean
+     */
+    public function wxQueryResult($args = []) {
+        // 先从数据查询通知是否到达
+        $curd = new CurdService();
+        $res = $curd->fetchOne("app\models\WeixinNotify", $args);
+        if($res['status'] && !empty($res['data'])) {
+            // 通知已到达则将通知结果返回
+            $notify = $res['data'];
+            if($notify->result_code == "SUCCESS") {
+                return TRUE;
+            } else {
+                return FALSE;
+            }
+        } else {
+            // 通知未到达则调用微信的订单查询接口
+            return Yii::$app->wxpay->Queryorder($args);
+        }
+    }
 }

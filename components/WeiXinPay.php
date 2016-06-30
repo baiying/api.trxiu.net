@@ -58,14 +58,6 @@ class WeiXinPay extends Component{
         }
     }
     /**
-     * 支付结果通知回调方法
-     */
-    public function notify() {
-        require "WxPay/lib/WxPay.Notify.Extend.php";
-        $notify = new \WxPayNotifyExtend();
-        $notify->Handle(true);
-    }
-    /**
      *
      * 获取jsapi支付的参数
      * @param array $UnifiedOrderResult 统一支付接口返回的数据
@@ -87,10 +79,17 @@ class WeiXinPay extends Component{
         return $parameters;
     }
     //查询订单是否支付成功
-    public function Queryorder($transaction_id) {
+    public function Queryorder($args = []) {
+        require_once 'WxPay/lib/WxPay.Api.php';
         require_once "WxPay/lib/WxPay.Data.php";
         $input = new \WxPayOrderQuery();
-        $input->SetTransaction_id($transaction_id);
+        if(isset($args['transaction_id']) && $args['transaction_id'] != "") {
+            $input->SetTransaction_id($args['transaction_id']);
+        } elseif(isset($args['out_trade_no']) && $args['out_trade_no'] != "") {
+            $input->SetOut_trade_no($args['out_trade_no']);
+        } else {
+            return false;
+        }
         $result = \WxPayApi::orderQuery($input);
         if(array_key_exists("return_code", $result) && array_key_exists("result_code", $result) && $result["return_code"] == "SUCCESS" && $result["result_code"] == "SUCCESS"){
             return true;
@@ -101,8 +100,8 @@ class WeiXinPay extends Component{
      * 支付结果通知回调方法
      */
     public function notify() {
-        require "WxPay/lib/WxPay.Notify.php";
-        $notify = new \WxPayNotifyExtend();
+        require_once "WxPay/lib/WxPay.Notify.php";
+        $notify = new \WxPayNotify();
         $notify->Handle(true);
     }
     /**

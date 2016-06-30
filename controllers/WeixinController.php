@@ -124,7 +124,7 @@ class WeixinController extends NoAuthBaseController {
      * @param int $data['expirt']       支付超时时间，默认1小时
      */
     public function actionUnifiedOrder() {
-        $this->checkMethod('get');
+        $this->checkMethod('post');
         $rule = [
             'fans_id'   => ['type'=>'int', 'required'=>true],
             'ballot_id' => ['type'=>'int', 'required'=>false, 'default'=>0],
@@ -135,7 +135,7 @@ class WeixinController extends NoAuthBaseController {
             'type'      => ['type'=>'int', 'required'=>false, 'default'=>1],
             'expire'    => ['type'=>'int', 'required'=>false, 'default'=>3600],
         ];
-        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        $args = $this->getRequestData($rule, Yii::$app->request->post());
         
         $trans = Yii::$app->db->beginTransaction();
         try {
@@ -192,5 +192,30 @@ class WeixinController extends NoAuthBaseController {
      */
     public function actionNotify() {
         Yii::$app->wxpay->notify();
+    }
+    /**
+     * query-pay-result
+     * 查询微信支付是否成功
+     * 以下两个查询参数提供任一即可
+     * @param string $args['transaction_id']        微信订单号
+     * @param string $args['out_trade_no']          商户订单号
+     */
+    public function actionQueryPayResult() {
+        $this->checkMethod('get');
+        $rule = [
+            'transaction_id' => ['type'=>'string', 'required'=>FALSE],
+            'out_trade_no'   => ['type'=>'string', 'required'=>FALSE],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        if(!isset($args['transaction_id']) && !isset($args['out_trade_no'])) {
+            $this->renderJson(ApiCode::ERROR_API_FAILED, '微信订单号和商户订单号至少要提供其一');
+        }
+        $service = new PayService();
+        $res = $service->wxQueryResult($args);
+        if($res) {
+            $this->renderJson(ApiCode::SUCCESS, '支付成功');
+        } else {
+            $this->renderJson(ApiCode::ERROR_API_FAILED, '支付失败');
+        }
     }
 }
