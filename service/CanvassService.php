@@ -10,6 +10,7 @@ use app\models\Canvass;
 use app\models\CanvassRed;
 use app\models\Ballot;
 use yii\db\Exception;
+use app\models\VoteLog;
 
 class CanvassService extends BaseService {
     /**
@@ -82,6 +83,11 @@ class CanvassService extends BaseService {
         $canvass = Canvass::findOne(['ballot_id'=>$ballotId, 'canvass_id'=>$canvassId]);
         if(empty($canvass)) {
             return $this->export(FALSE, '未查询到指定的拉票活动');
+        }
+        // 判断用户是否已经领取过红包
+        $redVote = VoteLog::findOne(['ballot_id'=>$ballotId, 'fans_id'=>$fansId, 'canvass_id'=>$canvassId]);
+        if(!empty($redVote)) {
+            return $this->export(FALSE, '您已领取过红包，不能再次领取');
         }
         // 获取目前为止手气最佳红包金额
         $best = $canvass->bestAmount;
