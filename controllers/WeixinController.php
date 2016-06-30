@@ -4,6 +4,8 @@ namespace app\controllers;
 use Yii;
 use app\controllers\NoAuthBaseController;
 use app\components\ApiCode;
+use app\service\ChargeSerialService;
+use app\service\PayService;
 
 class WeixinController extends NoAuthBaseController {
     /**
@@ -60,7 +62,11 @@ class WeixinController extends NoAuthBaseController {
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->get());
         $accessToken = Yii::$app->weixin->getOauthAccessToken($args['code']);
-        $this->renderJson(ApiCode::SUCCESS, 'access_token获取成功', $accessToken);
+        if($accessToken === FALSE) {
+            $this->renderJson(ApiCode::ERROR_API_FAILED, '获取用户access_token失败');
+        } else {
+            $this->renderJson(ApiCode::SUCCESS, 'access_token获取成功', $accessToken);
+        }
     }
     /**
      * refresh-access-token
@@ -99,12 +105,92 @@ class WeixinController extends NoAuthBaseController {
      * @param string $url   请求页面的地址
      */
     public function actionJsSign() {
+        $this->checkMethod('post');
+        $url = urldecode(Yii::$app->request->post('url'));
+        $res = Yii::$app->weixin->getJsSign($url);
+        $this->renderJson(ApiCode::SUCCESS, "OK", $res);
+    }
+    /**
+     * unified-order
+     * 微信统一下单接口，生成系统充值流水及微信预付订单
+     * 流水单生成后需要在指定时间段内支付成功，否则将会取消
+     * @param int $data['fans_id']      流水单所属用户ID
+     * @param int $data['ballot_id']    流水单关联活动ID
+     * @param int $data['anchor_id']    流水单关联主播ID
+     * @param int $data['openid']      充值微信账号的openid
+     * @param int $data['total']        充值金额，“分”为单位
+     * @param int $data['status']       流水单状态，1 等待支付结果，2 支付成功，3 支付失败，4 超时未支付
+     * @param int $data['type']         流水单类型，1 主播拉票
+     * @param int $data['expirt']       支付超时时间，默认1小时
+     */
+    public function actionUnifiedOrder() {
         $this->checkMethod('get');
         $rule = [
-            'url' => ['type'=>'string', 'required'=>true]
+            'fans_id'   => ['type'=>'int', 'required'=>true],
+            'ballot_id' => ['type'=>'int', 'required'=>false, 'default'=>0],
+            'anchor_id' => ['type'=>'int', 'required'=>false, 'default'=>0],
+            'openid'    => ['type'=>'string', 'required'=>true],
+            'total'     => ['type'=>'int', 'required'=>true],
+            'status'    => ['type'=>'int', 'required'=>false, 'default'=>1],
+            'type'      => ['type'=>'int', 'required'=>false, 'default'=>1],
+            'expire'    => ['type'=>'int', 'required'=>false, 'default'=>3600],
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->get());
-        $res = Yii::$app->weixin->getJsSign($args['url']);
-        $this->renderJson(ApiCode::SUCCESS, "OK", $res);
+        
+        $trans = Yii::$app->db->beginTransaction();
+        try {
+            // 生成充值流水单
+            $chargeService = new ChargeSerialService();
+            $res = $chargeService->create($args);
+            if($res['status']) {
+                $serialno = $res['data']['serialno'];
+                // 调用微信统一下单API
+                $payService = new PayService();
+                $res = $payService->wxUnifiedOrder([
+                    'openid'    => $args['openid'],
+                    'remark'    => '主播拉票充值',
+                    'serialno'  => $serialno,
+                    'total'     => $args['total'],
+                    'expire'    => $args['expire']
+                ]);
+                if($res['status']) {
+                    // 将微信服务器返回数据更新到流水记录中
+                    $resUpd = $chargeService->update($serialno, $res['data']);
+                    if($resUpd['status']) {
+                        $trans->commit();
+                        if($res['data']['result_code'] == "SUCCESS") {
+                            $jsApiArgs = Yii::$app->wxpay->getJsApiParameters($res['data']);
+                            $this->renderJson(ApiCode::SUCCESS, '预付单生成成功', $jsApiArgs);
+                            
+                        } else {
+                            $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message']);
+                        }
+                        
+                    } else {
+                        $trans->rollBack();
+                        $this->renderJson(ApiCode::ERROR_API_FAILED, $resUpd['message']);
+                    }
+                    
+                } else {
+                    $trans->rollBack();
+                    $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message']);
+                }
+                
+            } else {
+                $trans->rollBack();
+                $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message']);
+            }
+            
+        } catch(Exception $e) {
+            $trans->rollBack();
+            $this->renderJson(ApiCode::ERROR_API_FAILED, $e->getMessage());
+        }
+    }
+    /**
+     * notify
+     * 微信支付结果异步通知处理接口
+     */
+    public function actionNotify() {
+        Yii::$app->wxpay->notify();
     }
 }

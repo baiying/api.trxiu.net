@@ -61,18 +61,36 @@ class NoAuthBaseController extends Controller {
     public function getRequestData($rule = [], $data = []) {
         $result = array();
         foreach($rule as $key=>$value) {
-            if(!isset($data[$key]) && $value['required'] == TRUE) {
+            if(!isset($data[$key]) && isset($value['required']) && $value['required'] == TRUE) {
                 $this->renderJson(ApiCode::ERROR_API_DENY, 'Lost parameter: '.$key);
             }
             switch($value['type']) {
                 case 'int':
-                    $result[$key] = intval($data[$key]);
+                    if(!isset($data[$key])) {
+                        if(isset($value['default'])) {
+                            $result[$key] = intval($value['default']);
+                        }
+                    } else {
+                        $result[$key] = intval($data[$key]);
+                    }
                     break;
                 case 'float':
-                    $result[$key] = floatval($data[$key]);
+                    if(!isset($data[$key])) {
+                        if(isset($value['default'])) {
+                            $result[$key] = floatval($value['default']);
+                        } 
+                    } else {
+                        $result[$key] = floatval($data[$key]);
+                    }
                     break;
                 case 'string':
-                    $result[$key] = htmlspecialchars(addslashes(strip_tags(trim($data[$key]))));
+                    if(!isset($data[$key])) {
+                        if(isset($value['default'])) {
+                            $result[$key] = $value['default'];
+                        }
+                    } else {
+                        $result[$key] = htmlspecialchars(addslashes(strip_tags(trim($data[$key]))));
+                    }
                     break;
             }
         }
