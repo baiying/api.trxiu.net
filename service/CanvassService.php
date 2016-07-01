@@ -11,6 +11,7 @@ use app\models\CanvassRed;
 use app\models\Ballot;
 use yii\db\Exception;
 use app\models\VoteLog;
+use app\models\Fans;
 
 class CanvassService extends BaseService {
     /**
@@ -104,7 +105,7 @@ class CanvassService extends BaseService {
             $getRed->fans_id = $fansId;
             $getRed->receive_time = time();
             // 判断是否为手气最佳
-            if($best == 0) {
+            if($best == null) {
                 $getRed->best = 1;
                 $getRed->save();
             } else {
@@ -148,12 +149,29 @@ class CanvassService extends BaseService {
      */
     public function info($canvassId) {
         $canvass = Canvass::findOne(['canvass_id'=>$canvassId]);
+        if(empty($canvass)) {
+            return $this->export(false, '拉票活动不存在');
+        }
         $anchor = $canvass->anchor;
         $fans = $canvass->fans;
         $result = $canvass->attributes;
         $result['anchor_name'] = $anchor->fans->wx_name;
         $result['fans_name'] = $fans->wx_name;
         $result['fans_thumb'] = $fans->wx_thumb;
+        // 获取拉票活动中手气最佳的用户
+        $best = $canvass->bestAmount;
+        if($best == null) {
+            $result['best_amount'] = 0;
+            $result['best_fans_id'] = 0;
+            $result['best_user_name'] = "";
+            $result['best_user_thumb'] = "";
+        } else {
+            $result['best_amount'] = $best->amount;
+            $result['best_fans_id'] = $best->fans_id;
+            $bestFans = Fans::findOne(['fans_id'=>$best->fans_id]);
+            $result['best_user_name'] = $bestFans->wx_name;
+            $result['best_user_thumb'] = $bestFans->wx_thumb;
+        }
         return $this->export(TRUE, 'OK', $result);
     }
     /**
