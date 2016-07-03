@@ -10,6 +10,8 @@ use app\models\Canvass;
 use app\models\CanvassRed;
 use app\models\Ballot;
 use yii\db\Exception;
+use app\models\VoteLog;
+use app\models\Fans;
 
 class CanvassService extends BaseService {
     /**
@@ -39,12 +41,37 @@ class CanvassService extends BaseService {
         $data['create_time'] = time();
         $data['active_time'] = time();
         $data['end_time'] = $ballot->end_time;
-        $res = $curd->createRecord($modelName, $data);
-        if($res['status']) {
-            // 生成拉票红包
-            $this->createRedPackage($data['canvass_id'], $data['amount']);
-        } 
-        return $res;
+        
+        $trans = Yii::$app->db->beginTransaction();
+        try {
+            $res = $curd->createRecord($modelName, $data);
+            if($res['status']) {
+                // 生成拉票红包
+                $this->createRedPackage($data['canvass_id'], $data['amount']);
+                // 在投票日志表中添加一条记录
+                $voteService = new VoteService();
+                $resVote = $voteService->addOne([
+                    'ballot_id' => $data['ballot_id'],
+                    'anchor_id' => $data['anchor_id'],
+                    'fans_id'   => $data['fans_id'],
+                    'canvass_id'=> $data['canvass_id'],
+                    'earn'      => 0,
+                    'votes'     => $data['charge']
+                ]);
+                if($resVote['status']) {
+                    $trans->commit();
+                    return $this->export(true, '拉票申请成功', ['canvass_id'=>$data['canvass_id']]);
+                } else {
+                    $trans->rollBack();
+                    return $this->export(false, $res['message']);
+                }
+            } 
+            return $res;
+            
+        } catch(Exception $e) {
+            $trans->rollBack();
+            return $this->export(false, $e->getMessage());            
+        }
     }
     /**
      * receiveRedpackage
@@ -57,6 +84,11 @@ class CanvassService extends BaseService {
         $canvass = Canvass::findOne(['ballot_id'=>$ballotId, 'canvass_id'=>$canvassId]);
         if(empty($canvass)) {
             return $this->export(FALSE, '未查询到指定的拉票活动');
+        }
+        // 判断用户是否已经领取过红包
+        $redVote = VoteLog::findOne(['ballot_id'=>$ballotId, 'fans_id'=>$fansId, 'canvass_id'=>$canvassId]);
+        if(!empty($redVote)) {
+            return $this->export(FALSE, '您已领取过红包，不能再次领取');
         }
         // 获取目前为止手气最佳红包金额
         $best = $canvass->bestAmount;
@@ -73,7 +105,7 @@ class CanvassService extends BaseService {
             $getRed->fans_id = $fansId;
             $getRed->receive_time = time();
             // 判断是否为手气最佳
-            if($best == 0) {
+            if($best == null) {
                 $getRed->best = 1;
                 $getRed->save();
             } else {
@@ -93,7 +125,8 @@ class CanvassService extends BaseService {
                 'anchor_id' => $canvass->anchor_id,
                 'canvass_id'=> $canvassId,
                 'fans_id'   => $fansId,
-                'earn'      => $getRed->amount
+                'earn'      => $getRed->amount, 
+                'votes'     => 1
             ]);
             if($res['status']) {
                 $trans->commit();
@@ -116,12 +149,29 @@ class CanvassService extends BaseService {
      */
     public function info($canvassId) {
         $canvass = Canvass::findOne(['canvass_id'=>$canvassId]);
+        if(empty($canvass)) {
+            return $this->export(false, '拉票活动不存在');
+        }
         $anchor = $canvass->anchor;
         $fans = $canvass->fans;
         $result = $canvass->attributes;
         $result['anchor_name'] = $anchor->fans->wx_name;
         $result['fans_name'] = $fans->wx_name;
         $result['fans_thumb'] = $fans->wx_thumb;
+        // 获取拉票活动中手气最佳的用户
+        $best = $canvass->bestAmount;
+        if($best == null) {
+            $result['best_amount'] = 0;
+            $result['best_fans_id'] = 0;
+            $result['best_user_name'] = "";
+            $result['best_user_thumb'] = "";
+        } else {
+            $result['best_amount'] = $best->amount;
+            $result['best_fans_id'] = $best->fans_id;
+            $bestFans = Fans::findOne(['fans_id'=>$best->fans_id]);
+            $result['best_user_name'] = $bestFans->wx_name;
+            $result['best_user_thumb'] = $bestFans->wx_thumb;
+        }
         return $this->export(TRUE, 'OK', $result);
     }
     /**

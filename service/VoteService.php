@@ -18,6 +18,7 @@ class VoteService extends BaseService {
      * @param number $data['fans_id']       粉丝ID，必填
      * @param string $data['canvass_id']    拉票ID，选填
      * @param number $data['earn]           抽取拉票红包金额，选填
+     * @param number $data['votes']         票数，必填
      */
     public function addOne($data = []) {
         // 判断该粉丝在今天是否已经为本主播投过免费票
@@ -41,11 +42,11 @@ class VoteService extends BaseService {
             $res = $curd->createRecord("app\models\VoteLog", $data);
             if($res['status']) {
                 // 更新主播的票数
-                $anchorVote->votes += 1;
+                $anchorVote->votes += $data['votes'];
                 if($data['canvass_id'] == "") {
-                    $anchorVote->vote_free += 1;
+                    $anchorVote->vote_free += $data['votes'];
                 } else {
-                    $anchorVote->vote_pay += 1;
+                    $anchorVote->vote_pay += $data['votes'];
                 }
                 if($anchorVote->save()) {
                     $trans->commit();

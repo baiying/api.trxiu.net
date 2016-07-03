@@ -86,7 +86,7 @@ class Canvass extends BaseModel
      */
     public function getBestAmount() {
         $res = CanvassRed::find()->where(['canvass_id'=>$this->canvass_id, 'best'=>1])->one();
-        return empty($res) ? 0 : $res;
+        return empty($res) ? null : $res;
     }
     /**
      * 获取拉票关联的活动信息

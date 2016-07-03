@@ -33,7 +33,7 @@ class VoteLog extends BaseModel
     {
         return [
             [['vote_id', 'ballot_id', 'anchor_id', 'fans_id'], 'required', 'on'=>'create'],
-            [['ballot_id', 'anchor_id', 'fans_id', 'create_time', 'new_fans'], 'integer'],
+            [['ballot_id', 'anchor_id', 'fans_id', 'create_time', 'new_fans', 'votes'], 'integer'],
             [['earn'], 'number'],
             [['vote_id', 'canvass_id'], 'string', 'max' => 20],
         ];

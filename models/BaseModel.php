@@ -51,10 +51,12 @@ class BaseModel extends \yii\db\ActiveRecord
         $ext['limit']['size'] = isset($ext['limit']['size']) ? $ext['limit']['size'] : 1;
         $ext['limit']['start'] = isset($ext['limit']['start']) ? $ext['limit']['start'] : 0;
         $result['list'] = $this->getList($select,$where,$ext);
-        $query = new Query();
-        $query = $query->from($this->tableName());
         //获取列表行数
         if(isset($ext['limit'])){
+            $query = new Query();
+            $query = $query->from($this->tableName());
+            isset($ext['groupBy']) && $query->groupBy($ext['groupBy']);
+            isset($ext['orderBy']) && $query->orderBy($ext['orderBy']);
             $this->getWhere($where,$query);
             if(isset($ext['like'])){
                 $this->getLike($ext['like'],$query);
