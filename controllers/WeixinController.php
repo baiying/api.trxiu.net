@@ -60,7 +60,11 @@ class WeixinController extends NoAuthBaseController {
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->get());
         $accessToken = Yii::$app->weixin->getOauthAccessToken($args['code']);
-        $this->renderJson(ApiCode::SUCCESS, 'access_token获取成功', $accessToken);
+        if($accessToken === false) {
+            $this->renderJson(ApiCode::ERROR_API_FAILED, '获取用户access_token失败');
+        } else {
+            $this->renderJson(ApiCode::SUCCESS, 'access_token获取成功', $accessToken);
+        }
     }
     /**
      * refresh-access-token
