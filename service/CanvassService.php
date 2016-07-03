@@ -207,10 +207,11 @@ class CanvassService extends BaseService {
      */
     private function createRedPackage($canvassId, $money) {
         // 生成红包数组
-        $min = 0.01;
-        $remainMoney = $remainPackage = $money;
+        $min = 1;
+        $remainMoney = $money;
+        $remainPackage = $maxPackage = $money%2 == 0 ? $money/2 : ceil($monty/2)-1;
         $packages = [];
-        for($i = 0; $i < $money; $i++) {
+        for($i = 0; $i < $maxPackage; $i++) {
             if($remainPackage == 1) {
                 $packageMoney = $remainMoney;
                 $packages[] = $packageMoney;
@@ -220,10 +221,10 @@ class CanvassService extends BaseService {
                 $max = bcmul(bcdiv($remainMoney, $remainPackage, 2), 2, 2);
                 $r = mt_rand(0, 100) / 100;
                 $packageMoney = bcmul($max, $r, 2);
-                bccomp($packageMoney, $min, 2) <= 0 && $packageMoney = 0.01;
+                bccomp($packageMoney, $min, 2) <= 0 && $packageMoney = 1;
                 $packages[] = $packageMoney;
                 $remainPackage--;
-                $remainMoney -= $packageMoney;
+                $remainMoney = bcsub($remainMoney, $packageMoney, 2);
             }
         }
         // 红包入库
