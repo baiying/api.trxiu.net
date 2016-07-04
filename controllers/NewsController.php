@@ -100,7 +100,7 @@ class NewsController extends BaseController
         $data['fans_id'] = $args['fans_id'];
         $data['content'] = $args['content'];
         $data['status'] = $args['status'];
-        isset($data['parent_comment_id']) && $data['parent_comment_id'] = $args['parent_comment_id'];
+        isset($args['parent_comment_id']) && $data['parent_comment_id'] = $args['parent_comment_id'];
         $data['create_time'] = time();
         $this->anchorService = new AnchorService();
         $result = $this->anchorService->newComment($data);
