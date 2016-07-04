@@ -113,6 +113,7 @@ class FansController extends BaseController
             'anchor_id' => ['type' => 'string', 'required' => FALSE],
             'page' => ['type' => 'int', 'required' => FALSE, 'default' => '1'],
             'size' => ['type' => 'int', 'required' => FALSE, 'default' => '10'],
+            'all_list' => ['type' => 'string', 'required' => FALSE],
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->get());
 
@@ -127,7 +128,11 @@ class FansController extends BaseController
         $ext['orderBy'] = ['create_time'=>'desc'];
 
         $this->fansService = new FansService();
-        $result = $this->fansService->getList('*',$where,$ext);
+        if(isset($args['all_list']) && $args['all_list'] == 'all'){
+            $result = $this->fansService->getAllList(['fans_id','wx_name','wx_thumb','wx_sex'],$where);
+        }else{
+            $result = $this->fansService->getList('*',$where,$ext);
+        }
         if($result['status']==false){
             $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
         }

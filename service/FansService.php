@@ -31,6 +31,15 @@ class FansService extends BaseService
         return $this->export(true,'成功',$result);
     }
 
+    public function getAllList($select = '*',$where = array(),$ext = array()){
+        $fans = new Fans;
+        $result = $fans->getList($select,$where,$ext);
+        if(!$result){
+            return $this->export(false,'获取失败',$result);
+        }
+        return $this->export(true,'成功',$result);
+    }
+
     /**
      * @param array $data
      * @return 添加粉丝

@@ -66,6 +66,36 @@ class MessageController extends BaseController
         }
         $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
     }
+    /**
+     * 群发消息
+     */
+    public function actionAddMessageMore(){
+        $this->messageService = new MessageService();
+        $this->checkMethod('post');
+        $rule = [
+            'send_fans_id' => ['type' => 'int', 'required' => TRUE],
+            'fans_id_list' => ['type' => 'string', 'required' => TRUE],
+            'content' => ['type' => 'string', 'required' => TRUE],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->post());
+
+        $fans_id_list_str = $args['fans_id_list'];
+        $fans_id_list = explode(',',$fans_id_list_str);
+        foreach ($fans_id_list as $key => $value){
+            if($value == ""){
+                unset($fans_id_list[$key]);
+            }
+        }
+        $message['send_fans_id'] = $args['send_fans_id'];
+        $message['content'] = $args['content'];
+        $message['code'] = Yii::$app->utils->createID(Yii::$app->id);
+        $message['create_time'] = time();
+        $result = $this->messageService->addMessageMore($message,$fans_id_list);
+        if($result['status']==false){
+            $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
+        }
+        $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
+    }
 
     /**
      * 查看消息

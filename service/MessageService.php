@@ -84,6 +84,45 @@ class MessageService extends BaseService
         }
         return $this->export(true,'成功',$result);
     }
+    /**
+     * 选择性亲发
+     */
+    public function addMessageMore($data = array(),$fans_id_list = array()){
+        $this->fans = new Fans();
+        if(!isset($data['send_fans_id'])){
+            return $this->export(false,'没有填写发送人');
+        }
+        $fans = $this->fans->getRow('fans_id',['fans_id'=>$data['send_fans_id']]);
+        if(!$fans){
+            return $this->export(false,'您没有这个权限');
+        }
+        $this->message = new Message();
+        $this->message->attributes = $data;
+        if(!$this->message->validate()) {
+            return $this->export(false,'属性验证失败',$this->message->errors);
+        }
+        $result = array();
+        $connection = Yii::$app->db;
+        $transaction = $connection->beginTransaction();
+        try {
+            foreach ($fans_id_list as $item){
+                $data['receive_fans_id'] = $item;
+                $result = $this->message->insertData($data);
+                if(!$result){
+                    return $this->export(false,'操作失败',$result);
+                }
+            }
+            // ... 执行其他 SQL 语句 ...
+            $transaction->commit();
+        } catch(\Exception $e) {
+            $transaction->rollBack();
+            $result = false;
+        }
+        if(!$result){
+            return $this->export(false,'操作失败');
+        }
+        return $this->export(true,'成功',$result);
+    }
 
     /**
      * 删除消息
