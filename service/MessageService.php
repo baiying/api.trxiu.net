@@ -212,6 +212,11 @@ class MessageService extends BaseService
                 return $this->export(false,'读取用户消息时发生错误',$send_fans);
             }
             $result['send_fans'] = $send_fans;
+        }else{
+            $result['send_fans']['fans_id'] = 0;
+            $result['send_fans']['wx_name'] = '系统消息';
+            $result['send_fans']['wx_thumb'] = "http://o8syigvwe.bkt.clouddn.com/o_1amdi1me5l8c16jc18bq1d6hdrgn.png";
+
         }
 
         $receive_fans = $this->fans->getRow('*',['fans_id'=>$this->message->receive_fans_id]);
@@ -242,7 +247,7 @@ class MessageService extends BaseService
             }else{
                 $result['list'][$key]['send_fans']['fans_id'] = 0;
                 $result['list'][$key]['send_fans']['wx_name'] = '系统消息';
-                $result['list'][$key]['send_fans']['wx_thumb'] = "http://wx.qlogo.cn/mmopen/oYwP0cFmRU0yeRFvMnAZkytQiczSB4lAkXcPdH1pam409VQmuovLd55pp5libkUoOBpXLBJojibnKd7TSst5hicDaw/0";
+                $result['list'][$key]['send_fans']['wx_thumb'] = "http://o8syigvwe.bkt.clouddn.com/o_1amdi1me5l8c16jc18bq1d6hdrgn.png";
             }
             if($value['receive_fans_id']!=0){
                 $receive_fans = $this->fans->getRow('*',['fans_id'=>$value['receive_fans_id']]);
