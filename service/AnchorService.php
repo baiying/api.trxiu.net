@@ -354,7 +354,7 @@ class AnchorService extends BaseService
             $commentWhere['news_id'] = $value['news_id'];
             //构建查询条件
             $commentExt['limit']['page'] = 1;
-            $commentExt['limit']['size'] = 3;
+            $commentExt['limit']['size'] = 5;
             //计算limit数据
             $commentExt['limit']['start'] = ($commentExt['limit']['page'] - 1) * $commentExt['limit']['size'];
             $commentExt['orderBy'] = ['create_time'=>'desc'];
