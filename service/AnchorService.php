@@ -398,8 +398,8 @@ class AnchorService extends BaseService
             $fans = $this->fans->getRow('*',['fans_id'=>$value['fans_id']]);
             $result['list'][$key]['fans'] = $fans;
             if($value['parent_comment_id'] != 0){
-                $parent_comment = $this->anchorComment->getRow('*',$value['parent_comment_id']);
-                $parent_comment_fans =$this->fans->getRow('*',$parent_comment['fans_id']);
+                $parent_comment = $this->anchorComment->getRow('*',['parent_comment_id'=>$value['parent_comment_id']]);
+                $parent_comment_fans =$this->fans->getRow('*',['fans_id'=>$parent_comment['fans_id']]);
                 $result['list'][$key]['parent_comment_fans'] = $parent_comment_fans;
             }
         }
