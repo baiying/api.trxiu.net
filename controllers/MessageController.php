@@ -204,9 +204,10 @@ class MessageController extends BaseController
         $where['status'] = 1;
         $result = $this->message->getList('message_id',$where);
         if(!$result){
-            $this->renderJson(ApiCode::ERROR_API_FAILED,'读取消息列表失败');
+            $rs['countUnreadMessage'] = 0;
+        }else{
+            $rs['countUnreadMessage'] = count($result);
         }
-        $rs['countUnreadMessage'] = count($result);
         $this->renderJson(ApiCode::SUCCESS,'成功',$rs);
 
     }
