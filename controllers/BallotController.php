@@ -399,4 +399,15 @@ class BallotController extends BaseController
         $result['isAnchor'] = isset($userOpenid) ? (($userOpenid==$openid) ? true : false) : false;
         $this->renderJson(ApiCode::SUCCESS, '主播信息获取成功', $result);
     }
+    /**
+     * change-status
+     * 更新活动状态
+     */
+    public function actionChangeStatus() {
+        $this->checkMethod('get');
+        $service = new BallotService();
+        $res = $service->changeStatus();
+        $this->renderJson(ApiCode::SUCCESS, '执行完毕');
+    }
 }
+

@@ -571,6 +571,32 @@ class BallotService extends BaseService
         return $this->export(true,'成功',$result);
 
     }
+    /**
+     * changeStatus
+     * 遍历全部待进行和进行中的活动，自动更新活动状态
+     */
+    public function changeStatus() {
+        // 处理待进行的活动
+        $ballots = Ballot::find()->where(['status'=>2])->all();
+        if(!empty($ballots)) {
+            foreach($ballots as $item) {
+                if($item->begin_time < time() && $item->end_time > time()) {
+                    $item->status = 1;
+                    $item->save();
+                }
+            }
+        }
+        // 处理进行中活动
+        $ballots = Ballot::find()->where(['status'=>1])->all();
+        if(!empty($ballots)) {
+            foreach($ballots as $item) {
+                if($item->end_time < time()) {
+                    $item->status = 3;
+                    $item->save();
+                }
+            }
+        }
+    }
 
     /**
      * @最小值 $min
