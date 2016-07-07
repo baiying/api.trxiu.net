@@ -597,7 +597,6 @@ class BallotService extends BaseService
             }
         }
     }
-
     /**
      * @最小值 $min
      * @安全上限 $safe_total

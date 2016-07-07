@@ -409,5 +409,5 @@ class BallotController extends BaseController
         $res = $service->changeStatus();
         $this->renderJson(ApiCode::SUCCESS, '执行完毕');
     }
+    
 }
-
