@@ -132,11 +132,19 @@ class CanvassController extends BaseController {
     }
     /**
      * send-red-package
-     * 从待发送的拉票红包中选择最早的一个进行发送
+     * 发送拉票红包
      * 
      */
     public function actionSendRedPackage() {
         $service = new CanvassService();
         $service->sendRedPackage();
+    }
+    /**
+     * send-cashback-red
+     * 发送拉票返现红包
+     */
+    public function actionSendCashbackRed() {
+        $service = new CanvassService();
+        $service->sendCashbackRed();
     }
 }
