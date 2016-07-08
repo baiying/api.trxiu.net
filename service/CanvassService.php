@@ -104,6 +104,7 @@ class CanvassService extends BaseService {
             // 将粉丝ID更新到红包中，表示该红包已被领取
             $getRed->fans_id = $fansId;
             $getRed->receive_time = time();
+            $getRed->status = 2;
             // 判断是否为手气最佳
             if($best == null) {
                 $getRed->best = 1;
