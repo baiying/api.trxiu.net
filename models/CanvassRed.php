@@ -31,7 +31,7 @@ class CanvassRed extends BaseModel
         return [
             [['canvass_id', 'amount'], 'required', 'on'=>'create'],
             [['amount'], 'number'],
-            [['fans_id', 'receive_time', 'status', 'send_time'], 'integer'],
+            [['fans_id', 'receive_time', 'status', 'send_time', 'err_count'], 'integer'],
             [['canvass_id'], 'string', 'max' => 20],
             [['err_msg'], 'string', 'max'=>64]
         ];

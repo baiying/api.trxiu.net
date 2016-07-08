@@ -208,39 +208,45 @@ class CanvassService extends BaseService {
      */
     public function sendRedPackage() {
         // 获取红包信息
-        $red = CanvassRed::find()->where(['status'=>2])->orderBy("red_id asc")->one();
+        $reds = CanvassRed::find()->where(['status'=>2])->all();
         if(empty($red)) {
             return $this->export(true, '没有需要发送的红包');
         }
-        // 获取红包接收人的信息
-        $fans = Fans::findOne(['fans_id'=>$red->fans_id]);
-        $openid = $fans->wx_openid;
-        // 获取拉票活动信息
-        $canvass = Canvass::findOne(['canvass_id'=>$red->canvass_id]);
-        $ballot = $canvass->ballot;
-        // 发送红包
-        $sender = new WeixinService();
-        $data = [
-            'openid'    => $openid,
-            'company'   => '唐人秀',
-            'sender'    => '唐人秀',
-            'wish'      => '恭喜您在'. $ballot->ballot_name .'活动中抽中红包',
-            'actname'   => $ballot->ballot_name,
-            'remark'    => $ballot->ballot_name,
-            'amount'    => $red->amount * 100
-        ];
-        $res = $sender->sendRedPackage($data);
-        if($res['status']) {
-            // 将红包记录置为已领取
-            $red->status = 3;
-            $red->send_time = time();
-            $red->save();
-        } else {
-            // 将红包记录置为发送失败，并记录失败原因
-            $red->status = 4;
-            $red->err_msg = $res['message'];
-            $red->send_time = time();
-            $red->save();
+        foreach($reds as $red) {
+            // 获取红包接收人的信息
+            $fans = Fans::findOne(['fans_id'=>$red->fans_id]);
+            $openid = $fans->wx_openid;
+            // 获取拉票活动信息
+            $canvass = Canvass::findOne(['canvass_id'=>$red->canvass_id]);
+            $ballot = $canvass->ballot;
+            // 发送红包
+            $sender = new WeixinService();
+            $data = [
+                'openid'    => $openid,
+                'company'   => '唐人秀',
+                'sender'    => '唐人秀',
+                'wish'      => '恭喜您在'. $ballot->ballot_name .'活动中抽中红包',
+                'actname'   => $ballot->ballot_name,
+                'remark'    => $ballot->ballot_name,
+                'amount'    => $red->amount * 100
+            ];
+            $res = $sender->sendRedPackage($data);
+            if($res['status']) {
+                // 将红包记录置为已领取
+                $red->status = 3;
+                $red->send_time = time();
+                $red->save();
+            } else {
+                // 记录发送失败次数，当发送失败超过3次，则停止尝试发送
+                if($red->err_count >= 3) {
+                    $red->status = 4;
+                } else {
+                    $red->err_count++;
+                }
+                $red->err_msg = $res['message'];
+                $red->send_time = time();
+                $red->save();
+            }
         }
     }
     /**
