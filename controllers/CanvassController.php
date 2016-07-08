@@ -84,13 +84,13 @@ class CanvassController extends BaseController {
      * @param number $fans_id       抽取红包的粉丝ID
      */
     public function actionReceiveRedpackage() {
-        $this->checkMethod('get');
+        $this->checkMethod('post');
         $rule = [
             'ballot_id'     => ['type'=>'int', 'required'=>true],
             'canvass_id'    => ['type'=>'string', 'required'=>true],
             'fans_id'       => ['type'=>'int', 'required'=>true],
         ];
-        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        $args = $this->getRequestData($rule, Yii::$app->request->post());
         extract($args);
         $service = new CanvassService();
         $res = $service->receiveRedpackage($ballot_id, $canvass_id, $fans_id);
