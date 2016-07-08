@@ -13,7 +13,7 @@ use Yii;
  * @property integer $fans_id
  * @property integer $receive_time
  */
-class CanvassRed extends \yii\db\ActiveRecord
+class CanvassRed extends BaseModel
 {
     /**
      * @inheritdoc

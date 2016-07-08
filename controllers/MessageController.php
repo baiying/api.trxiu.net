@@ -9,6 +9,7 @@
 namespace app\controllers;
 
 use app\models\Fans;
+use app\models\Message;
 use Yii;
 use app\components\ApiCode;
 use app\controllers\BaseController;
@@ -21,6 +22,7 @@ use app\service\MessageService;
 class MessageController extends BaseController
 {
     private $messageService;
+    private $message;
     private $fans;
 
     /**
@@ -152,6 +154,61 @@ class MessageController extends BaseController
             $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
         }
         $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
+
+    }
+    /**
+     * 修改所有消息为已读
+     */
+    public function actionUpMessageStatus(){
+        $this->checkMethod('get');
+        $rule = [
+            'fans_id' => ['type' => 'int', 'required' => TRUE],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        $this->message = new Message();
+        //构建查询条件
+        $where['receive_fans_id'] = $args['fans_id'];
+        $data['status'] = 2;
+        try{
+            $result = $this->message->updateData($data,$where);
+        }catch (\Exception $e){
+            $result = false;
+        }
+        if(!$result){
+            $this->renderJson(ApiCode::ERROR_API_FAILED,'您暂时没有未读消息');
+        }
+        $this->renderJson(ApiCode::SUCCESS,'读取新消息成功',$result);
+    }
+
+
+    /**
+     * 读取未读消息数量
+     */
+    public function actionGetCountUnreadMessageByFansId(){
+
+        $this->checkMethod('get');
+        $rule = [
+            'fans_id' => ['type' => 'int', 'required' => TRUE],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        $this->message = new Message();
+        //构建查询条件
+        $fansWhere['fans_id'] = $args['fans_id'];
+        $this->fans = new Fans();
+        $fans = $this->fans->getRow('*',$fansWhere);
+        if(!$fans){
+            $this->renderJson(ApiCode::ERROR_API_FAILED,'您的用户已锁定或不存在');
+        }
+        //构建查询条件
+        $where['receive_fans_id'] = $args['fans_id'];
+        $where['status'] = 1;
+        $result = $this->message->getList('message_id',$where);
+        if(!$result){
+            $rs['countUnreadMessage'] = 0;
+        }else{
+            $rs['countUnreadMessage'] = count($result);
+        }
+        $this->renderJson(ApiCode::SUCCESS,'成功',$rs);
 
     }
 

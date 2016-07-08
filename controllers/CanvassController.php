@@ -7,6 +7,7 @@ use Yii;
 use app\controllers\BaseController;
 use app\components\ApiCode;
 use app\service\CanvassService;
+use app\models\CanvassRed;
 
 class CanvassController extends BaseController {
     /**
@@ -55,6 +56,26 @@ class CanvassController extends BaseController {
             $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message']);
         }
     }
+    /**
+     * 根据拉票信息和粉丝ID获取是否领取过红包
+     */
+    public function actionGetRedByFansId() {
+        $this->checkMethod('get');
+        $rule = [
+            'canvass_id' => ['type'=>'string', 'required'=>true],
+            'fans_id' => ['type'=>'int', 'required'=>true],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
+        $CanvassRed = new CanvassRed();
+        $where['canvass_id'] = $args['canvass_id'];
+        $where['fans_id'] = $args['fans_id'];
+        $res = $CanvassRed->getRow('*',$where);
+        if(!$res) {
+            $this->renderJson(ApiCode::ERROR_API_FAILED, '获取红包信息失败');
+        }
+        $this->renderJson(ApiCode::SUCCESS, '成功', $res);
+    }
+
     /**
      * receive-redpackage
      * 抽取红包

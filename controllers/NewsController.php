@@ -41,7 +41,9 @@ class NewsController extends BaseController
         //构建查询条件
         $data['anchor_id'] = $args['anchor_id'];
         $data['content'] = $args['content'];
-        isset($args['images']) && $data['images'] = json_encode(explode(",", $args['images']));
+        if(isset($args['images']) && $args['images']!=""){
+            $data['images'] = json_encode(explode(",", $args['images']));
+        }
         $data['status'] = $args['status'];
         $data['create_time'] = time();
         $this->anchorService = new AnchorService();

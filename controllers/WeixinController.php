@@ -107,7 +107,9 @@ class WeixinController extends NoAuthBaseController {
     public function actionJsSign() {
         $this->checkMethod('post');
         $url = urldecode(Yii::$app->request->post('url'));
+        Yii::warning($url, 'service_warning');
         $res = Yii::$app->weixin->getJsSign($url);
+        Yii::warning(json_encode($res), 'service_warning');
         $this->renderJson(ApiCode::SUCCESS, "OK", $res);
     }
     /**
@@ -216,6 +218,26 @@ class WeixinController extends NoAuthBaseController {
             $this->renderJson(ApiCode::SUCCESS, '支付成功');
         } else {
             $this->renderJson(ApiCode::ERROR_API_FAILED, '支付失败');
+        }
+    }
+    
+    public function actionSendRedPackage() {
+        $this->checkMethod('get');
+        require_once "../components/WXHongBao.php";
+        $usrWXOpenId = "o5keCwmrJwovYdGQsKeaOFf8K3Wo"; //接收红包的用户的微信OpenId，捕获和辨识方法略~
+        $hb = new \WXHongBao();
+        $hb->newhb($usrWXOpenId ,100); //新建一个10元的红包，第二参数单位是 分，注意取值范围 1-200元
+        //以下若干项可选操作，不指定则使用class脚本顶部的预设值
+        $hb->setNickName("土豪有限公司");
+        $hb->setSendName("王富贵");
+        $hb->setWishing("恭喜发财");
+        $hb->setActName("发钱活动");
+        $hb->setRemark("有钱!任性!");
+        //发送红包
+        if(!$hb->send()){ //发送错误
+            echo $hb->err();
+        }else{
+            echo "红包发送成功";
         }
     }
 }
