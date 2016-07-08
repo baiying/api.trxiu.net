@@ -318,7 +318,8 @@ class CanvassService extends BaseService {
         $data = [
             'canvass_id'    => $canvass_id,
             'fans_id'       => $canvass->fans_id,
-            'amount'        => $canvass->charge * 2 * 100
+            'amount'        => $canvass->charge * 2 * 100,
+            'create_time'   => time()
         ];
         $res = $curd->createRecord("app\models\CanvassCashback", $data);
         return $res['status']; 
