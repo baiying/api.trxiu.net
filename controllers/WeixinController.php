@@ -6,6 +6,7 @@ use app\controllers\NoAuthBaseController;
 use app\components\ApiCode;
 use app\service\ChargeSerialService;
 use app\service\PayService;
+use app\service\WeixinService;
 
 class WeixinController extends NoAuthBaseController {
     /**
@@ -220,24 +221,35 @@ class WeixinController extends NoAuthBaseController {
             $this->renderJson(ApiCode::ERROR_API_FAILED, '支付失败');
         }
     }
-    
+    /**
+     * send-red-package
+     * 发送红包接口
+     * @param string $openid    接收红包的微信openid
+     * @param string $company   公司名称
+     * @param string $sender    发送者名称
+     * @param string $wish      红包附言
+     * @param number $amount    红包金额，单位“分”
+     * @param string $actname   活动名称
+     * @param string $remark    红包备注
+     */
     public function actionSendRedPackage() {
-        $this->checkMethod('get');
-        require_once "../components/WXHongBao.php";
-        $usrWXOpenId = "o5keCwmrJwovYdGQsKeaOFf8K3Wo"; //接收红包的用户的微信OpenId，捕获和辨识方法略~
-        $hb = new \WXHongBao();
-        $hb->newhb($usrWXOpenId ,100); //新建一个10元的红包，第二参数单位是 分，注意取值范围 1-200元
-        //以下若干项可选操作，不指定则使用class脚本顶部的预设值
-        $hb->setNickName("土豪有限公司");
-        $hb->setSendName("王富贵");
-        $hb->setWishing("恭喜发财");
-        $hb->setActName("发钱活动");
-        $hb->setRemark("有钱!任性!");
-        //发送红包
-        if(!$hb->send()){ //发送错误
-            echo $hb->err();
-        }else{
-            echo "红包发送成功";
+        $this->checkMethod('post');
+        $rule = [
+            'openid'    => ['type'=>'string', 'required'=>true],
+            'company'   => ['type'=>'string', 'required'=>true],
+            'sender'    => ['type'=>'string', 'required'=>true],
+            'wish'      => ['type'=>'string', 'required'=>true],
+            'amount'    => ['type'=>'int', 'required'=>true],
+            'actname'   => ['type'=>'string', 'required'=>false, 'default'=>''],
+            'remark'    => ['type'=>'string', 'required'=>false, 'default'=>''],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->post());
+        $service = new WeixinService();
+        $res = $service->sendRedPackage($args);
+        if($res['status']) {
+            $this->renderJson(ApiCode::SUCCESS, '红包发送成功');
+        } else {
+            $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message']);
         }
     }
 }

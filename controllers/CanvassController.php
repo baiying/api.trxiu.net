@@ -130,4 +130,13 @@ class CanvassController extends BaseController {
             $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message'], $res['data']);
         }
     }
+    /**
+     * send-red-package
+     * 从待发送的拉票红包中选择最早的一个进行发送
+     * 
+     */
+    public function actionSendRedPackage() {
+        $service = new CanvassService();
+        $service->sendRedPackage();
+    }
 }
