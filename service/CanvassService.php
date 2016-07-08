@@ -209,7 +209,7 @@ class CanvassService extends BaseService {
     public function sendRedPackage() {
         // 获取红包信息
         $reds = CanvassRed::find()->where(['status'=>2])->all();
-        if(empty($red)) {
+        if(empty($reds)) {
             return $this->export(true, '没有需要发送的红包');
         }
         foreach($reds as $red) {
@@ -267,7 +267,7 @@ class CanvassService extends BaseService {
                 $remainPackage--;
                 $remainMoney = 0;
             } else {
-                $max = bcmul(bcdiv($remainMoney, $remainPackage, 2), 2, 2);
+                $max = bcmul(bcdiv($remainMoney, $remainPackage, 2), 1.5, 2);
                 $r = mt_rand(0, 100) / 100;
                 $packageMoney = bcmul($max, $r, 2);
                 bccomp($packageMoney, $min, 2) <= 0 && $packageMoney = 1;
