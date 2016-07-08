@@ -258,7 +258,7 @@ class CanvassService extends BaseService {
         // 生成红包数组
         $min = 1;
         $remainMoney = $money;
-        $remainPackage = $maxPackage = $money%2 == 0 ? $money/2 : ceil($monty/2)-1;
+        $remainPackage = $maxPackage = $money%2 == 0 ? $money/2 : ceil($money/2)-1;
         $packages = [];
         for($i = 0; $i < $maxPackage; $i++) {
             if($remainPackage == 1) {
