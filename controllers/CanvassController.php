@@ -33,7 +33,7 @@ class CanvassController extends BaseController {
         $service = new CanvassService();
         $res = $service->createCanvass($args);
         if($res['status']) {
-            $this->renderJson(ApiCode::SUCCESS, '拉票添加成功');
+            $this->renderJson(ApiCode::SUCCESS, '拉票添加成功', $res['data']);
         } else {
             $this->renderJson(ApiCode::ERROR_API_FAILED, $res['message']);
         }
