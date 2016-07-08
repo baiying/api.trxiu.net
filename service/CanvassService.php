@@ -86,7 +86,7 @@ class CanvassService extends BaseService {
             return $this->export(FALSE, '未查询到指定的拉票活动');
         }
         // 判断用户是否已经领取过红包
-        $redVote = VoteLog::findOne(['ballot_id'=>$ballotId, 'fans_id'=>$fansId, 'canvass_id'=>$canvassId]);
+        $redVote = VoteLog::findOne(['ballot_id'=>$ballotId, 'fans_id'=>$fansId, 'canvass_id'=>$canvassId, 'votes'=>1]);
         if(!empty($redVote)) {
             return $this->export(FALSE, '您已领取过红包，不能再次领取');
         }
