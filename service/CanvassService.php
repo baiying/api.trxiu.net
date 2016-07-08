@@ -213,7 +213,7 @@ class CanvassService extends BaseService {
         }
         // 获取红包接收人的信息
         $fans = Fans::findOne(['fans_id'=>$red->fans_id]);
-        $openid = $fans->openid;
+        $openid = $fans->wx_openid;
         // 获取拉票活动信息
         $canvass = Canvass::findOne(['canvass_id'=>$red->canvass_id]);
         $ballot = $canvass->ballot;
@@ -225,18 +225,20 @@ class CanvassService extends BaseService {
             'sender'    => '唐人秀',
             'wish'      => '恭喜您在'. $ballot->ballot_name .'活动中抽中红包',
             'actname'   => $ballot->ballot_name,
-            'remark'    => '',
+            'remark'    => $ballot->ballot_name,
             'amount'    => $red->amount * 100
         ];
         $res = $sender->sendRedPackage($data);
         if($res['status']) {
             // 将红包记录置为已领取
             $red->status = 3;
+            $red->send_time = time();
             $red->save();
         } else {
             // 将红包记录置为发送失败，并记录失败原因
             $red->status = 4;
             $red->err_msg = $res['message'];
+            $red->send_time = time();
             $red->save();
         }
     }
