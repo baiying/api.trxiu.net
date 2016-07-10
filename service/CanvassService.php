@@ -12,6 +12,7 @@ use app\models\Ballot;
 use yii\db\Exception;
 use app\models\VoteLog;
 use app\models\Fans;
+use app\models\CanvassCashback;
 
 class CanvassService extends BaseService {
     /**
@@ -20,7 +21,7 @@ class CanvassService extends BaseService {
      * @param number $data['ballot_id']     活动ID
      * @param number $data['anchor_id']     主播ID
      * @param number $data['fans_id']       粉丝ID
-     * @param number $data['source_id']     来源拉票ID
+     * @param string $data['source_id']     来源拉票ID
      * @param number $data['charge']        充值金额
      * @param number $data['status']        拉票状态，1 有效，2 待支付，3 无效
      */
@@ -60,6 +61,10 @@ class CanvassService extends BaseService {
                 ]);
                 if($resVote['status']) {
                     $trans->commit();
+                    // 如果本次拉票有来源ID，则统计来源产生的二次拉票数量，达到3个以上，向来源拉票用户返现双倍红包
+                    if($data['source_id'] != "") {
+                        $this->cashBack($data['source_id']);
+                    }
                     return $this->export(true, '拉票申请成功', ['canvass_id'=>$data['canvass_id']]);
                 } else {
                     $trans->rollBack();
@@ -248,6 +253,78 @@ class CanvassService extends BaseService {
                 $red->save();
             }
         }
+    }
+    /**
+     * 发送拉票返现红包
+     * @return Ambigous <multitype:, multitype:unknown string >
+     */
+    public function sendCashbackRed() {
+        // 获取拉票返现中待发送的记录
+        $res = CanvassCashback::find()->where(['status'=>1])->all();
+        if(empty($res)) {
+            return $this->export(false, '没有待处理的返现记录');
+        }
+        foreach($res as $item) {
+            $canvass = Canvass::findOne(['canvass_id'=>$item->canvass_id]);
+            $fans = $canvass->fans;
+            $ballot = $canvass->ballot;
+            // 组装红包数据
+            $data = [];
+            $data['openid'] = $fans->wx_openid;
+            $data['company'] = '唐人秀';
+            $data['sender'] = '唐人秀';
+            $data['wish'] = "拉票之星！红包请笑纳！";
+            $data['actname'] = $ballot->ballot_name;
+            $data['remark'] = $ballot->ballot_name;
+            $data['amount'] = $item->amount;
+            // 发送红包
+            $service = new WeixinService();
+            $res = $service->sendRedPackage($data);
+            $item->send_time = time();
+            if($res['status']) {
+                $item->status = 2;
+            } else {
+                $item->err_msg = $res['message'];
+                if($item->err_count >= 3) {
+                    $item->status = 3;
+                } else {
+                    $item->err_count++;
+                }
+            }
+            $item->save();
+        }
+    }
+    /**
+     * 拉票返现
+     * @param unknown $canvass_id
+     * @return boolean|unknown
+     */
+    private function cashBack($canvass_id) {
+        // 查询二次拉票数量
+        $res = Canvass::find()->where(['source_id'=>$canvass_id])->all();
+        // 如果二次拉票数量未达到3，则退出
+        if(empty($res) || count($res) < 3) {
+            return false;
+        }
+        // 查询之前是否已经返现
+        $res = CanvassCashback::findOne(['canvass_id'=>$canvass_id]);
+        if(!empty($res)) {
+            return false;
+        }
+        // 获取源拉票信息及发起人信息
+        $canvass = Canvass::findOne(['canvass_id'=>$canvass_id]);
+        // 返现信息存入返现表中canvass_cashback
+        $curd = new CurdService();
+        $data = [
+            'canvass_id'    => $canvass_id,
+            'fans_id'       => $canvass->fans_id,
+            'amount'        => $canvass->charge * 2 * 100,
+            'create_time'   => time()
+        ];
+        $res = $curd->createRecord("app\models\CanvassCashback", $data);
+        return $res['status']; 
+        
+        
     }
     /**
      * 生成红包
