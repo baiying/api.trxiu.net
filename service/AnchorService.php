@@ -129,8 +129,8 @@ class AnchorService extends BaseService
         $this->fans = new Fans();
         if(isset($ext['limit']['size']) && $ext['limit']['size']=='max'){
             unset($ext['limit']);
-            $anchorList = $this->anchor->getList('*',$where,$ext);
-            $fansList = $this->fans->getList('*',$where);
+            $anchorList = $this->anchor->getList('*',$where['anchor'],$ext);
+            $fansList = $this->fans->getList('*',$where['fans']);
             foreach ($anchorList as $key=>$value){
                 $anchorList[$key]['anchor_name'] = '';
                 $anchorList[$key]['thumb'] = '';
@@ -146,8 +146,12 @@ class AnchorService extends BaseService
             }
             return $this->export(true,'成功',$anchorList);
         }
-        $anchorList = $this->anchor->getListAndLimit('*',$where,$ext);
-        $fansList = $this->fans->getList('*',$where);
+        $fansList = $this->fans->getList('*',$where['fans']);
+        foreach ($fansList as $item){
+            $where['anchor']['anchor_id'][] = $item['anchor_id'];
+        }
+        $anchorList = $this->anchor->getListAndLimit('*',$where['anchor'],$ext);
+
         foreach ($anchorList['list'] as $key=>$value){
             $anchorList['list'][$key]['anchor_name'] = '';
             $anchorList['list'][$key]['thumb'] = '';
@@ -498,6 +502,22 @@ class AnchorService extends BaseService
         }
         if(!$result){
             return $this->export(false,'操作失败',$comment);
+        }
+        return $this->export(true,'操作成功',$result);
+    }
+
+    /**
+     * 撤销主播
+     */
+    public function delAnchor($anchor_id){
+        $this->fans = Fans::findOne(['anchor_id'=>$anchor_id]);
+        if(!$this->fans){
+            return $this->export(false,'该主播不存在');
+        }
+        $this->fans->anchor_id = 0;
+        $result = $this->fans->save();
+        if(!$result){
+            return $this->export(false,'操作失败');
         }
         return $this->export(true,'操作成功',$result);
     }

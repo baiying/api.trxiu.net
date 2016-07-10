@@ -107,9 +107,9 @@ class FansController extends BaseController
 
         $this->checkMethod('get');
         $rule = [
-            'wx_openid' => ['type' => 'string', 'required' => FALSE],
-            'wx_name' => ['type' => 'string', 'required' => FALSE],
-            'wx_thumb' => ['type' => 'string', 'required' => FALSE],
+            'openid' => ['type' => 'string', 'required' => FALSE],
+            'name' => ['type' => 'string', 'required' => FALSE],
+            'thumb' => ['type' => 'string', 'required' => FALSE],
             'anchor_id' => ['type' => 'string', 'required' => FALSE],
             'page' => ['type' => 'int', 'required' => FALSE, 'default' => '1'],
             'size' => ['type' => 'int', 'required' => FALSE, 'default' => '10'],
@@ -117,9 +117,9 @@ class FansController extends BaseController
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->get());
 
-        isset($args['wx_openid']) && $where['wx_openid'] = $args['wx_openid'];
-        isset($args['wx_name']) && $where['wx_name'] = $args['wx_name'];
-        isset($args['wx_thumb']) && $where['wx_thumb'] = $args['wx_thumb'];
+        isset($args['openid']) && $where['wx_openid'] = $args['openid'];
+        isset($args['name']) && $where['wx_name'] = $args['name'];
+        isset($args['thumb']) && $where['wx_thumb'] = $args['thumb'];
         isset($args['anchor_id']) && $where['anchor_id'] = explode(",", $args['anchor_id']);
         $ext['limit']['page'] = isset($args['page']) ? $args['page'] : 1;
         $ext['limit']['size'] = isset($args['size']) ? $args['size'] : 10;
