@@ -125,12 +125,13 @@ class AnchorController extends BaseController
      */
     public function actionGetAnchorList(){
 
-        $result = $data = $where = $ext = array();
+        $result = $data = $where['fans'] = $where['anchor'] = $ext = array();
 
         $this->checkMethod('get');
         $rule = [
             'page' => ['type' => 'int', 'required' => FALSE],
             'size' => ['type' => 'int', 'required' => FALSE],
+            'name' => ['type' => 'string', 'required' => FALSE],
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->get());
 
@@ -141,6 +142,7 @@ class AnchorController extends BaseController
         $ext['limit']['start'] = ($ext['limit']['page'] - 1) * $ext['limit']['size'];
         $ext['orderBy'] = 'modify_time DESC';
         $this->anchorService = new AnchorService();
+        isset($args['name']) && $where['fans']['wx_name'] = $args['name'];
         $result = $this->anchorService->getAnchorList($where,$ext);
         if($result['status']==false){
             $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
@@ -171,6 +173,28 @@ class AnchorController extends BaseController
         $ext['orderBy'] = ['modify_time'=>'desc'];
         $this->anchorService = new AnchorService();
         $result = $this->anchorService->getAnchorListAndNews($where,$ext);
+        if($result['status']==false){
+            $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
+        }
+        $this->renderJson(ApiCode::SUCCESS,$result['message'],$result['data']);
+
+    }
+    /**
+     * 撤销主播
+     */
+    public function actionDelAnchor(){
+
+        $result = $data = $where = $ext = array();
+
+        $this->checkMethod('post');
+        $rule = [
+            'anchor_id' => ['type' => 'int', 'required' => true],
+        ];
+        $args = $this->getRequestData($rule, Yii::$app->request->post());
+
+        $anchor_id = $args['anchor_id'];
+        $this->anchorService = new AnchorService();
+        $result = $this->anchorService->delAnchor($anchor_id);
         if($result['status']==false){
             $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);
         }
