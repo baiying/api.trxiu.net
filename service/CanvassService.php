@@ -303,7 +303,7 @@ class CanvassService extends BaseService {
         // 查询二次拉票数量
         $res = Canvass::find()->where(['source_id'=>$canvass_id])->all();
         // 如果二次拉票数量未达到3，则退出
-        if(empty($res) || count($res) < 3) {
+        if(empty($res) || count($res) <= 2) {
             return false;
         }
         // 查询之前是否已经返现
