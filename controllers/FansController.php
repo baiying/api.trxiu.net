@@ -8,6 +8,7 @@
 
 namespace app\controllers;
 
+use app\service\MessageService;
 use Yii;
 use app\components\ApiCode;
 use app\service\FansService;
@@ -217,7 +218,24 @@ class FansController extends BaseController
             $res = $service->register($args);
             if(!$res['status']) {
                 $this->renderJson(ApiCode::ERROR_API_FAILED, '用户信息注册失败');
-            } 
+            }
+            $message = new MessageService();
+            $messageData['receive_fans_id']  = $res['data']['fans_id'];
+            $messageData['code'] = Yii::$app->utils->createID(Yii::$app->id);
+            $messageData['create_time'] = time();
+            $messageData['send_fans_id'] = 0;
+            $messageData['content'] = "
+            欢迎来到唐人秀，给心仪的主播投票，获得红包大奖！<br/>
+            <br/>
+            参与“萌主派对”活动，只需要三步：<br/>
+            1、给心仪的主播拉票<br/>
+            2、分享给你的朋友<br/>
+            3、当你有三个朋友也来给主播拉票，你就能获得双倍的现金奖励哦！<br/>
+            <br/>
+            PS：你的朋友发红包的时候，你也可以领到很多红包现金哦！<br/>
+            ";
+            $message->addMessage($messageData);
+
             $this->renderJson(ApiCode::SUCCESS, '用户信息注册成功', ['fans_id'=>$res['data']['fans_id']]);
         }
     }
