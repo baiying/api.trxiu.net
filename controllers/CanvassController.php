@@ -21,16 +21,16 @@ class CanvassController extends BaseController {
      * @param number $data['status']        拉票状态，1 有效，2 待支付，3 无效
      */
     public function actionCreateCanvass() {
-        $this->checkMethod('post');
+        $this->checkMethod('get');
         $rule = [
             'ballot_id'     => ['type'=>'int', 'required'=>true],
             'anchor_id'     => ['type'=>'int', 'required'=>true],
             'fans_id'       => ['type'=>'int', 'required'=>true],
             'charge'        => ['type'=>'float', 'required'=>true],
-            'source_id'     => ['type'=>'string', 'required'=>false],
+            'source_id'     => ['type'=>'string', 'required'=>false, 'default'=>''],
             'status'        => ['type'=>'int', 'required'=>false, 'default'=>1],
         ];
-        $args = $this->getRequestData($rule, Yii::$app->request->post());
+        $args = $this->getRequestData($rule, Yii::$app->request->get());
         $service = new CanvassService();
         $res = $service->createCanvass($args);
         if($res['status']) {
