@@ -313,6 +313,9 @@ class CanvassService extends BaseService {
         }
         // 获取源拉票信息及发起人信息
         $canvass = Canvass::findOne(['canvass_id'=>$canvass_id]);
+        if(empty($canvass)) {
+            return false;
+        }
         // 返现信息存入返现表中canvass_cashback
         $curd = new CurdService();
         $data = [
