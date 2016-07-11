@@ -62,7 +62,7 @@ class CanvassService extends BaseService {
                 if($resVote['status']) {
                     $trans->commit();
                     // 如果本次拉票有来源ID，则统计来源产生的二次拉票数量，达到3个以上，向来源拉票用户返现双倍红包
-                    if($data['source_id'] != "") {
+                    if($data['source_id'] != "" && $data['source_id'] != "0") {
                         $this->cashBack($data['source_id']);
                     }
                     return $this->export(true, '拉票申请成功', ['canvass_id'=>$data['canvass_id']]);
