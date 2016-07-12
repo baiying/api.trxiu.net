@@ -27,7 +27,7 @@ class CanvassController extends BaseController {
             'anchor_id'     => ['type'=>'int', 'required'=>true],
             'fans_id'       => ['type'=>'int', 'required'=>true],
             'charge'        => ['type'=>'float', 'required'=>true],
-            'source_id'     => ['type'=>'string', 'required'=>false],
+            'source_id'     => ['type'=>'string', 'required'=>false, 'default'=>''],
             'status'        => ['type'=>'int', 'required'=>false, 'default'=>1],
         ];
         $args = $this->getRequestData($rule, Yii::$app->request->post());

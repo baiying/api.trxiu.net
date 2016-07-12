@@ -62,7 +62,7 @@ class CanvassService extends BaseService {
                 if($resVote['status']) {
                     $trans->commit();
                     // 如果本次拉票有来源ID，则统计来源产生的二次拉票数量，达到3个以上，向来源拉票用户返现双倍红包
-                    if($data['source_id'] != "") {
+                    if($data['source_id'] != "" && $data['source_id'] != "0") {
                         $this->cashBack($data['source_id']);
                     }
                     return $this->export(true, '拉票申请成功', ['canvass_id'=>$data['canvass_id']]);
@@ -303,7 +303,7 @@ class CanvassService extends BaseService {
         // 查询二次拉票数量
         $res = Canvass::find()->where(['source_id'=>$canvass_id])->all();
         // 如果二次拉票数量未达到3，则退出
-        if(empty($res) || count($res) < 3) {
+        if(empty($res) || count($res) <= 2) {
             return false;
         }
         // 查询之前是否已经返现
@@ -313,6 +313,9 @@ class CanvassService extends BaseService {
         }
         // 获取源拉票信息及发起人信息
         $canvass = Canvass::findOne(['canvass_id'=>$canvass_id]);
+        if(empty($canvass)) {
+            return false;
+        }
         // 返现信息存入返现表中canvass_cashback
         $curd = new CurdService();
         $data = [
