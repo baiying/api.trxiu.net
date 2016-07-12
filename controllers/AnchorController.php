@@ -125,7 +125,7 @@ class AnchorController extends BaseController
      */
     public function actionGetAnchorList(){
 
-        $result = $data = $where['fans'] = $where['anchor'] = $ext = array();
+        $result = $data = $where['fans'] = $where['anchor'] = $ext['anchor'] = $ext['fans'] = array();
 
         $this->checkMethod('get');
         $rule = [
@@ -140,9 +140,10 @@ class AnchorController extends BaseController
         $ext['limit']['size'] = isset($args['size']) ? $args['size'] : 10;
         //计算limit数据
         $ext['limit']['start'] = ($ext['limit']['page'] - 1) * $ext['limit']['size'];
-        $ext['orderBy'] = 'modify_time DESC';
+        $ext['anchor']['limit'] = $ext['fans']['limit'] = $ext['limit'];
+        $ext['anchor']['orderBy'] = 'modify_time DESC';
         $this->anchorService = new AnchorService();
-        isset($args['name']) && $where['fans']['wx_name'] = $args['name'];
+        isset($args['name']) && $ext['fans']['like']['wx_name'] = $args['name'];
         $result = $this->anchorService->getAnchorList($where,$ext);
         if($result['status']==false){
             $this->renderJson(ApiCode::ERROR_API_FAILED,$result['message'],$result['data']);

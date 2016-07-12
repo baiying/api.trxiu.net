@@ -119,7 +119,7 @@ class FansController extends BaseController
         $args = $this->getRequestData($rule, Yii::$app->request->get());
 
         isset($args['openid']) && $where['wx_openid'] = $args['openid'];
-        isset($args['name']) && $where['wx_name'] = $args['name'];
+        isset($args['name']) && $ext['like']['wx_name'] = $args['name'];
         isset($args['thumb']) && $where['wx_thumb'] = $args['thumb'];
         isset($args['anchor_id']) && $where['anchor_id'] = explode(",", $args['anchor_id']);
         $ext['limit']['page'] = isset($args['page']) ? $args['page'] : 1;

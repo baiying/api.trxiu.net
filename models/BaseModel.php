@@ -43,6 +43,8 @@ class BaseModel extends \yii\db\ActiveRecord
             }
         }
         $result = $query->all();
+//        $commandQuery = clone $query;
+//        var_dump($commandQuery->createCommand()->getRawSql());exit;
         return $result;
     }
 
@@ -99,7 +101,7 @@ class BaseModel extends \yii\db\ActiveRecord
                     if (is_array($item)) {
 
                     }else {
-                        $query = $query->where('like', $key, '%'.$item.'%');
+                        $query = $query->where(['like', $key, $item]);
                     }
                 }
             }
