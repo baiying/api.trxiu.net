@@ -159,6 +159,7 @@ class AnchorService extends BaseService
                 if($item['anchor_id'] == $value['anchor_id']){
                     $anchorList['list'][$key]['anchor_name'] = $item['wx_name'];
                     $anchorList['list'][$key]['thumb'] = $item['wx_thumb'];
+                    $anchorList['list'][$key]['last_time'] = $item['last_time'];
                 }
             }
         }
@@ -340,6 +341,7 @@ class AnchorService extends BaseService
         $result = $anchor->attributes;
         $result['anchor_name'] = $fans->wx_name;
         $result['thumb'] = $fans->wx_thumb;
+        $result['last_time'] = $fans->last_time;
         return $this->export(true,'成功',$result);
     }
 

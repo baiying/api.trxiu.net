@@ -19,6 +19,7 @@ use Yii;
  * @property string $wx_continue
  * @property string $wx_province
  * @property string $wx_city
+ * @property integer $last_time
  * @property integer $create_time
  */
 class Fans extends BaseModel
@@ -38,7 +39,7 @@ class Fans extends BaseModel
     {
         return [
             [['wx_openid', 'wx_name', 'wx_thumb', 'wx_access_token', 'wx_refresh_token'], 'required', 'on'=>'create'],
-            [['anchor_id', 'wx_sex', 'wx_access_token_expire', 'create_time'], 'integer'],
+            [['anchor_id', 'wx_sex', 'wx_access_token_expire', 'last_time', 'create_time'], 'integer'],
             [['wx_openid', 'wx_country'], 'string', 'max' => 64],
             [['wx_name'], 'string', 'max' => 32],
             [['wx_thumb'], 'string', 'max' => 256],
@@ -65,6 +66,7 @@ class Fans extends BaseModel
             'wx_continue' => 'Wx Continue',
             'wx_province' => 'Wx Province',
             'wx_city' => 'Wx City',
+            'last_time' => 'Last Time',
             'create_time' => 'Create Time',
         ];
     }

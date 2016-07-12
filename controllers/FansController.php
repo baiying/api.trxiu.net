@@ -210,6 +210,8 @@ class FansController extends BaseController
         if(!empty($res['data'])) {
             // 用户已注册则直接返回粉丝ID
             $fans = $res['data'];
+            $fansService = new FansService();
+            $fansService->upFans(['last_time'=>time()],['fans_id'=>$fans->fans_id]);
             $this->renderJson(ApiCode::SUCCESS, $res['message'], ['fans_id'=>$fans->fans_id]);
             
         } else {

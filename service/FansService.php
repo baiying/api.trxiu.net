@@ -139,6 +139,7 @@ class FansService extends BaseService
         $params['wx_access_token']  = $data['access_token'];
         $params['wx_refresh_token'] = $data['refresh_token'];
         $params['wx_access_token_expire'] = time() + $data['expires_in'];
+        $params['last_time']      = time();
         $params['create_time']      = time();
         $curd = new CurdService();
         return $curd->createRecord($modelName, $params);
