@@ -82,10 +82,14 @@ class BallotService extends BaseService
 
         $result = $selectWhere = array();
 
-        isset($where['current_time']) && $selectWhere[] = "begin_time <= ".$where['current_time']." and end_time >=  ".$where['current_time'];
+//        isset($where['current_time']) && $selectWhere[] = "begin_time <= ".$where['current_time']." and end_time >=  ".$where['current_time'];
         isset($where['begin_time']) && $selectWhere[] = "begin_time <= ".$where['begin_time'];
         isset($where['end_time']) && $selectWhere[] = "end_time >= ".$where['end_time'];
-        isset($where['status']) && $selectWhere[] = "status = ".$where['status'];
+        if(isset($where['status'])) {
+            $selectWhere[] = "status = " . $where['status'];
+        }else{
+            $selectWhere[] = "status <> 2";
+        }
         $this->ballot = new Ballot();
         $result = $this->ballot->getListAndLimit('*',$selectWhere,$ext);
         if(!$result){
