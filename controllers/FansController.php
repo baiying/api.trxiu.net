@@ -126,7 +126,7 @@ class FansController extends BaseController
         $ext['limit']['size'] = isset($args['size']) ? $args['size'] : 10;
         //计算limit数据
         $ext['limit']['start'] = ($ext['limit']['page'] - 1) * $ext['limit']['size'];
-        $ext['orderBy'] = ['create_time'=>'desc'];
+        $ext['orderBy']['last_time'] = SORT_DESC;
 
         $this->fansService = new FansService();
         if(isset($args['all_list']) && $args['all_list'] == 'all'){
