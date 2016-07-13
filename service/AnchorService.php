@@ -128,7 +128,7 @@ class AnchorService extends BaseService
         $this->anchor = new Anchor();
         $this->fans = new Fans();
         if(isset($ext['limit']['size']) && $ext['limit']['size']=='max'){
-            unset($ext['limit']);
+            unset($ext['anchor']['limit']);
             $anchorList = $this->anchor->getList('*',$where['anchor'],$ext['anchor']);
             $fansList = $this->fans->getList('*',$where['fans']);
             foreach ($anchorList as $key=>$value){
