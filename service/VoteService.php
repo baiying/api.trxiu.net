@@ -8,6 +8,7 @@ use app\service\BaseService;
 use app\service\CurdService;
 use app\models\VoteLog;
 use app\models\BallotEAnchor;
+use app\models\Ballot;
 
 class VoteService extends BaseService {
     /**
@@ -32,6 +33,11 @@ class VoteService extends BaseService {
         if(empty($anchorVote)) {
             return $this->export(FALSE, '被投票的主播并未参加本次活动');
         }
+        // 获取活动实例
+        $ballot = Ballot::findOne(['ballot_id'=>$data['ballot_id'], 'status'=>1]);
+        if(empty($ballot)) {
+            return $this->export(FALSE, '本活动尚未开始，暂时无法投票');
+        }
         // 数据库事务开始
         $trans = Yii::$app->db->beginTransaction();
         try{
@@ -49,8 +55,14 @@ class VoteService extends BaseService {
                     $anchorVote->vote_pay += $data['votes'];
                 }
                 if($anchorVote->save()) {
-                    $trans->commit();
-                    return $this->export(TRUE, '投票成功');
+                    $ballot->votes += $data['votes'];
+                    if($ballot->save()) {
+                        $trans->commit();
+                        return $this->export(TRUE, '投票成功');
+                    } else {
+                        return $this->export(FALSE, '投票失败');
+                    }
+                    
                 } else {
                     $trans->rollBack();
                     return $this->export(FALSE, '投票失败');
