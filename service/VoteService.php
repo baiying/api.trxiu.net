@@ -105,7 +105,7 @@ class VoteService extends BaseService {
         if($type == 'free') {
             $where .= " AND canvass_id = ''";
         } elseif($type == "pay") {
-            $where .= " AND canvass_id != ''";
+            $where .= " AND canvass_id != '' AND votes = 1";
         }
         $args['order'] = isset($data['order']) ? str_replace("-", " ", $data['order']) : "vote_id DESC";
         $args['page'] = isset($data['page']) ? $data['page'] : 1;
